@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Harga hosting – NEXORA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script>(function(){var d=document.documentElement;d.className+=" js";var t=null;try{t=localStorage.getItem("nexora-theme")}catch(e){}if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}d.dataset.theme=t})()</script>
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="/"><span class="logo-card"><img src="img/logo.png" alt="NEXORA" style="width: 45px; height: 45px;"></span><span class="logo-name">NEXORA</span></a>
+    <nav id="menu" aria-label="Menu">
+        <a href="index.html#proses">Cara Order</a>
+        <a href="index.html#harga">Jasa Setup</a>
+        <a href="index.html#layanan">Layanan</a>
+        <a href="harga-hosting.html" aria-current="page">Harga hosting</a>
+        <a href="faq.html">FAQ</a>
+        <a class="btn nav-dc" href="https://discord.gg/7bFYCRheRm"><i class="bi bi-discord"></i> Server Discord</a>
+      </nav>
+    <div class="nav-right">
+      <a class="btn btn-icon dc-icon" href="https://discord.gg/7bFYCRheRm" target="_blank" rel="noopener" aria-label="Server Discord" title="Server Discord"><i class="bi bi-discord"></i></a>
+      <button class="icon-btn theme-toggle" type="button" aria-label="Ganti mode terang atau gelap"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+      <button class="icon-btn menu-btn" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hh">
+    <h1>Pilih Paket Hosting, Mulai Main Hari Ini</h1>
+    <p>Biaya per bulan untuk hosting server game. Pilih Basic untuk kebutuhan dasar atau Premium untuk resource lebih besar.</p>
+    <div class="stats">
+      <div class="stat"><i class="bi bi-box2"></i><div><small>Total produk</small><b id="stat-total">20 paket</b></div></div>
+      <div class="stat"><i class="bi bi-tag"></i><div><small>Harga mulai dari</small><b id="stat-min">Rp&nbsp;19.000<span class="per">/bulan</span></b></div></div>
+      <div class="stat"><i class="bi bi-shield-check"></i><div><small>Perlindungan</small><b>DDoS</b></div></div>
+      <div class="stat"><i class="bi bi-hdd-stack"></i><div><small>Pilihan tier</small><b>Basic &amp; Premium</b></div></div>
+    </div>
+  </div>
+  <div class="toolbar">
+    <div class="chips" id="chips" role="group" aria-label="Kategori"></div>
+    <div class="tools">
+      <span id="count" aria-live="polite"></span>
+      <label><span>Urutkan</span>
+        <select class="sort" id="sort">
+          <option value="awal">Rekomendasi</option>
+          <option value="murah">Termurah</option>
+          <option value="mahal">Termahal</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <p class="tab-desc" id="tab-desc"></p>
+  <div class="plan-grid" id="plans" data-default="hosting"></div>
+  <noscript><p class="note">Aktifkan JavaScript untuk melihat daftar harga.</p></noscript>
+  <p class="note">Harga bisa berubah sesuai kebutuhan resource. Mencari jasa setup? <a href="index.html#harga">Lihat harga jasa</a>.</p>
+</div>
+
+<section id="kontak" class="cta-sec">
+  <div class="wrap">
+    <div class="cta-card v2 spot">
+      <span class="blob" aria-hidden="true"></span>
+      <span class="cta-orb o1" aria-hidden="true"></span><span class="cta-orb o2" aria-hidden="true"></span>
+      <div class="cta-body">
+        <div class="cta-main">
+          <span class="cta-kicker">Mulai dari satu chat</span>
+          <h2>Siap bikin <span class="grad">server kamu?</span></h2>
+          <p class="cta-p">Ceritakan idemu, kami bantu mewujudkannya.</p>
+          <div class="actions">
+            <a class="btn lg" href="https://discord.gg/7bFYCRheRm" target="_blank" rel="noopener"><i class="bi bi-discord"></i> Gabung Discord Nexora <span class="arr">&rarr;</span></a>
+          </div>
+          <ul class="cta-points"><li>Konsultasi lewat Discord</li><li>Harga final dikirim tim NEXORA</li><li>Java &amp; Bedrock</li></ul>
+        </div>
+        <div class="cta-qr">
+          <div class="qr-wrap">
+            <div class="qr-box"><img src="img/qr-discord.png" alt="QR Discord NEXORA" onerror="this.parentNode.classList.add('empty');this.remove()"><span class="qr-ph">Foto QR<br>img/qr-discord.png</span></div>
+            
+          </div>
+          <small>Scan untuk masuk ke Discord NEXORA</small>
+        </div>
+      </div>
+      <div class="cta-marq marq rev" data-marq="cta" aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <a class="logo" href="index.html"><span class="logo-card"><img src="img/logo.png" alt="NEXORA"></span><span class="logo-name">NEXORA</span></a>
+        <p>Jasa setup server Minecraft, Discord &amp; hosting.</p>
+        <div class="f-social">
+          <a class="btn ghost k-dc" href="#">Discord</a>
+          <a class="btn ghost k-wa" href="#">WhatsApp</a>
+        </div>
+      </div>
+      <div>
+        <h4>Layanan</h4>
+        <ul>
+          <li><a href="index.html#layanan">Setup Minecraft</a></li>
+          <li><a href="index.html#layanan">Setup Discord</a></li>
+          <li><a href="index.html#layanan">Hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Harga</h4>
+        <ul>
+          <li><a href="index.html#harga">Harga jasa</a></li>
+          <li><a href="harga-hosting.html">Harga hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Bantuan</h4>
+        <ul>
+          <li><a href="index.html#proses">Cara kerja</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="index.html#kontak">Hubungi kami</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="f-bottom">
+      <span>© 2026 NEXORA</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
