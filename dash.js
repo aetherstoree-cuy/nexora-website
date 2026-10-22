@@ -75,6 +75,13 @@
     var tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", of = "semua", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {};
     function setWide(w) { root.classList.toggle("wide", w); var b = $("#side-t"); $("i", b).className = "bi bi-chevron-double-" + (w ? "left" : "right"); b.setAttribute("aria-label", w ? "Persempit tab" : "Perlebar tab"); }
     function out() { ss("nx-role", ""); go(adm ? "nexora-admin-access.html" : "masuk.html"); }
+    function outAsk() {
+      modal('<div class="mbox sm"><div class="mh"><b>Keluar dari akun?</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><p>Apakah kamu yakin ingin keluar dari akun?</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn dng" data-ok>Ya, keluar</button></div></div>', function (m, close) {
+        $("[data-ok]", m).addEventListener("click", out);
+        m.addEventListener("keydown", function (ev) { if (ev.key === "Escape") close(); });
+        $("[data-x].btn", m).focus();
+      });
+    }
     function tb() { var h = $(".topbar"); if (h) document.documentElement.style.setProperty("--tb", h.offsetHeight + "px"); }
     tb(); window.addEventListener("resize", tb);
     window.__nxAdm = adm; if (!adm) sv("nx-cust", me());
@@ -177,10 +184,22 @@
         });
       });
     }
+    var UPL_TXT = "PNG, JPG, atau WEBP. Klik atau seret gambar ke sini.";
+    function uplHTML(T) {
+      return '<div class="upl"><input class="upl-in" type="file" accept="image/*" id="lg"><label class="upl-box" for="lg"><span class="upl-pv" id="upl-pv">' + (T.logo ? '<img src="' + T.logo + '" alt="">' : '<i class="bi bi-image"></i>') + '</span><span class="upl-t"><b>Logo situs</b><small id="upl-name">' + (T.logo ? "Logo aktif. Klik atau seret gambar baru ke sini." : UPL_TXT) + '</small></span><span class="btn ghost sm upl-btn"><i class="bi bi-upload"></i> Pilih file</span></label><button class="btn ghost sm" id="lg-x" type="button"><i class="bi bi-trash3"></i> Hapus logo</button></div>';
+    }
+    function setLogo(file) {
+      if (!file || file.type.indexOf("image/") !== 0) return toast("File harus berupa gambar");
+      shrink(file, 256, "image/png", function (d) {
+        root._T.logo = d; $("#nvl").innerHTML = '<img src="' + d + '" alt="Logo">';
+        var pv = $("#upl-pv"); if (pv) pv.innerHTML = '<img src="' + d + '" alt="">';
+        var nm = $("#upl-name"); if (nm) nm.textContent = file.name + " · " + Math.max(1, Math.round(file.size / 1024)) + " KB";
+      });
+    }
     function tampilan() {
       var T = ld("nx-tampilan", { nama: "NEXORA", discord: "https://discord.gg/7bFYCRheRm", hero: "Buat Server Minecraft Impianmu Bersama NEXORA.", sub: "Kami membantu menyiapkan server Minecraft, server Discord, dan hosting. Kamu tinggal fokus main dan membangun komunitas.", warna: "#7c5cff", logo: "" });
       var cols = ["#7c5cff", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#ec4899"];
-      $("#p-tampilan").innerHTML = '<div class="tmp"><div class="dcard"><b>Logo & nama</b><p class="muted">Tampil di navbar dan footer.</p><div class="nv-prev"><span class="lg" id="nvl">' + (T.logo ? '<img src="' + T.logo + '" alt="">' : '<i class="bi bi-box2"></i>') + '</span><b id="nvn">' + e(T.nama) + '</b></div><input type="file" accept="image/*" id="lg"> <button class="btn ghost sm" id="lg-x" type="button">Hapus logo</button><label class="fld" style="margin-top:14px"><span>Nama situs</span><input class="inp" data-t="nama" value="' + e(T.nama) + '"></label></div>' +
+      $("#p-tampilan").innerHTML = '<div class="tmp"><div class="dcard"><b>Logo & nama</b><p class="muted">Tampil di navbar dan footer.</p><div class="nv-prev"><span class="lg" id="nvl">' + (T.logo ? '<img src="' + T.logo + '" alt="">' : '<i class="bi bi-box2"></i>') + '</span><b id="nvn">' + e(T.nama) + '</b></div>' + uplHTML(T) + '<label class="fld" style="margin-top:14px"><span>Nama situs</span><input class="inp" data-t="nama" value="' + e(T.nama) + '"></label></div>' +
         '<div class="dcard"><b>Warna aksen</b><p class="muted">Pilih warna utama tombol dan penanda.</p><div class="sws">' + cols.map(function (c) { return '<button type="button" class="sw" data-c="' + c + '" style="--c:' + c + '" aria-pressed="' + (c === T.warna) + '" aria-label="Warna ' + c + '"></button>'; }).join("") + '</div><div class="pvbox" id="pvb" style="--pv:' + T.warna + '"><span class="pb">Tombol contoh</span><span class="pg">Badge</span></div></div>' +
         '<div class="dcard wide"><b>Teks halaman utama</b><label class="fld" style="margin-top:12px"><span>Judul</span><input class="inp" data-t="hero" value="' + e(T.hero) + '"></label><label class="fld"><span>Deskripsi</span><textarea class="txa" data-t="sub">' + e(T.sub) + '</textarea></label><label class="fld"><span>Link invite Discord</span><input class="inp" data-t="discord" value="' + e(T.discord) + '"></label></div></div><div class="tmp-a"><button class="btn" id="sv-tmp">Simpan perubahan</button><button class="btn ghost" id="rs-tmp">Reset</button></div>';
       root._T = T;
@@ -396,14 +415,14 @@
       var cb = $("#c-tagihan"); if (cb) { var nb = BL().filter(function (b) { return b.st === "Belum dibayar" && (adm ? dleft(b.jatuh) < 0 : bmine(b)); }).length; cb.textContent = nb; cb.hidden = !nb; }
       mk();
     }
-    var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", out);
+    var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
       var t = ev.target.closest("[data-tab],[data-go],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-af],[data-of],[data-back],[data-close],[data-hs],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],#sv-tmp,#rs-tmp,#lg-x,.sw,.dd-btn,.dd-opt,[data-bx]"); if (!t) return;
       var d = t.dataset;
       if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
       if (t.classList.contains("dd-opt")) { var dd = t.closest(".dd"); ddClose(); if (dd.hasAttribute("data-bdd")) return bdd(dd.id, d.v); $("#f-buka").paket.value = d.v; return bukaSync(); }
       if (d.bx) return bAct(d);
-      if (t.id === "logout") return out();
+      if (t.id === "logout") return outAsk();
       if (t.id === "side-t") return setWide(!root.classList.contains("wide"));
       if (d.tab || d.go) { tab = d.tab || d.go; return draw(); }
       if (d.gt) { var x = TK().filter(function (y) { return y.id === d.gt; })[0]; sel = d.gt; tg = x.st === "Selesai" ? "selesai" : "aktif"; tv = "chat"; tab = (!adm && x.st === "Selesai") ? "riwayat" : "tiket"; return draw(); }
@@ -420,7 +439,7 @@
       if (d.del !== undefined) { var H = HG(), r = tab === "hosting" ? H.hosting : H.jasa[hs], i = Number(d.del); return modal('<div class="mbox sm"><div class="mh"><b>Hapus paket?</b></div><div class="mb"><p class="muted">Paket "' + e(r[i].nama) + '" akan dihapus dari daftar.</p></div><div class="mf"><button class="btn ghost" data-x>Batal</button><button class="btn dng" data-ok>Hapus</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { r.splice(i, 1); sv("nx-harga", H); close(); toast("Paket dihapus"); draw(); }); }); }
       if (d.exp) { var b = new Blob([JSON.stringify(d.exp === "nx-harga" ? HG() : ld(d.exp, []), null, 2)], { type: "application/json" }), l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = d.exp + ".json"; l.click(); return; }
       if (d.c) { root._T.warna = d.c; $$(".sw", root).forEach(function (s) { s.setAttribute("aria-pressed", s === t); }); $("#pvb").style.setProperty("--pv", d.c); return; }
-      if (t.id === "lg-x") { root._T.logo = ""; $("#nvl").innerHTML = '<i class="bi bi-box2"></i>'; return; }
+      if (t.id === "lg-x") { root._T.logo = ""; $("#nvl").innerHTML = '<i class="bi bi-box2"></i>'; var pv = $("#upl-pv"); if (pv) pv.innerHTML = '<i class="bi bi-image"></i>'; var nm = $("#upl-name"); if (nm) nm.textContent = UPL_TXT; return; }
       if (t.id === "sv-tmp") { sv("nx-tampilan", root._T); return toast("Tampilan tersimpan (demo, belum mengubah web asli)"); }
       if (t.id === "rs-tmp") { sv("nx-tampilan", null); try { localStorage.removeItem("nx-tampilan"); } catch (x2) {} delete mem["nx-tampilan"]; tampilan(); return toast("Tampilan dikembalikan ke awal"); }
     });
@@ -445,8 +464,11 @@
       var t = ev.target;
       if (t.closest("#f-buka")) bukaSync();
       if (t.matches("[data-st]")) { var a = TK(); a.forEach(function (x) { if (x.id === sel) x.st = t.value; }); sv("nx-tk", a); toast("Status diperbarui"); draw(); }
-      if (t.id === "lg" && t.files[0]) shrink(t.files[0], 256, "image/png", function (d) { root._T.logo = d; $("#nvl").innerHTML = '<img src="' + d + '" alt="Logo">'; });
+      if (t.id === "lg" && t.files[0]) { setLogo(t.files[0]); t.value = ""; }
     });
+    root.addEventListener("dragover", function (ev) { var b = ev.target.closest(".upl-box"); if (!b) return; ev.preventDefault(); b.classList.add("drag"); });
+    root.addEventListener("dragleave", function (ev) { var b = ev.target.closest(".upl-box"); if (b) b.classList.remove("drag"); });
+    root.addEventListener("drop", function (ev) { var b = ev.target.closest(".upl-box"); if (!b) return; ev.preventDefault(); b.classList.remove("drag"); setLogo(ev.dataTransfer.files[0]); });
     root.addEventListener("submit", function (ev) {
       ev.preventDefault(); var f = ev.target;
       if (f.matches("[data-rep]")) {
