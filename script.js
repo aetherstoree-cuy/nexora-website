@@ -441,7 +441,7 @@ function pasangSort(sort) {
     }).join("");
   }
   function buka(b) {
-    menu.hidden = !b;
+    menu.hidden = !b; if (b) posisiMenu(menu);
     btn.setAttribute("aria-expanded", String(b));
     if (b) { const s = menu.querySelector('[aria-selected="true"]'); if (s) s.focus(); }
   }
@@ -670,5 +670,24 @@ document.addEventListener("DOMContentLoaded", function () {
   pasangMarquee();
   pasangSpot();
   pasangKontak();
+  pasangAkun();
   isiMulai();
 });
+
+function posisiMenu(m) {
+  const vw = document.documentElement.clientWidth;
+  m.style.translate = ""; m.style.maxWidth = (vw - 24) + "px";
+  const r = m.getBoundingClientRect(); let dx = 0;
+  if (r.left < 12) dx = 12 - r.left; else if (r.right > vw - 12) dx = vw - 12 - r.right;
+  if (dx) m.style.translate = dx + "px 0";
+}
+
+function pasangAkun() {
+  const b = document.querySelector(".login-btn"); if (!b || b.id === "nav-logout") return;
+  let role = "", name = "";
+  try { const w = window.__nxS || {}; role = w["nx-role"] || sessionStorage.getItem("nx-role") || ""; name = w["nx-name"] || sessionStorage.getItem("nx-name") || ""; } catch (x) {}
+  if (!role) return;
+  b.href = role === "admin" ? "nexora-admin.html" : "dashboard.html";
+  b.classList.add("on"); b.setAttribute("aria-label", "Akun: " + (name || "Dashboard"));
+  const s = b.querySelector("span"); if (s) s.textContent = (name || "Akun").split(" ")[0].slice(0, 12);
+}
