@@ -1,4 +1,4 @@
-Foto kartu "Jasa dan harga". Ukuran disarankan 16:9 (mis. 1280x720). Format: jpg, webp, atau png.
+Foto kartu "Jasa dan harga" (folder assets/img/paket/). Ukuran disarankan 16:9 (mis. 1280x720). Format: jpg, webp, atau png.
 Nama file = nama paket huruf kecil, spasi/simbol jadi "-". Kalau belum ada, tampil ikon pengganti.
 
 [minecraft]

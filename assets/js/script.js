@@ -1,3 +1,8 @@
+/* Lokasi folder: file ini ada di assets/js/. ASSET_BASE = folder assets/, ROOT = folder utama situs.
+   Dipakai agar path gambar dan link akun benar dari halaman di folder mana pun. */
+const ASSET_BASE = (function () { var s = document.currentScript || document.querySelector('script[src*="script.js"]'); return s ? s.src.replace(/js\/[^\/]*$/, "") : "assets/"; })();
+const ROOT = ASSET_BASE.replace(/assets\/$/, "");
+
 /* NEXORA – script.js */
 
 /* ===== 1. KONFIGURASI KONTAK (isi dengan milikmu) ===== */
@@ -5,6 +10,29 @@ const KONTAK = {
   discord: "",   // contoh: "https://discord.gg/kodeinvite"
   whatsapp: ""   // contoh: "6281234567890" (pakai 62, tanpa + dan tanpa 0 di depan)
 };
+
+/* ===== Kontak yang bisa diedit dari dashboard admin (demo: tersimpan di browser) ===== */
+const KONTAK_TIPE = {
+  email: ["Email", "envelope", "Kirim email"], whatsapp: ["WhatsApp", "whatsapp", "Chat WhatsApp"], discord: ["Discord", "discord", "Gabung Discord"],
+  instagram: ["Instagram", "instagram", "Buka Instagram"], telegram: ["Telegram", "telegram", "Buka Telegram"], youtube: ["YouTube", "youtube", "Buka YouTube"], lainnya: ["Link", "link-45deg", "Buka link"]
+};
+function kontakBawaan() {
+  return [
+    { id: "k1", tipe: "discord", label: "Discord", nilai: KONTAK.discord || "https://discord.gg/7bFYCRheRm", ket: "Konsultasi dan order lewat server Discord NEXORA.", aktif: true },
+    { id: "k2", tipe: "whatsapp", label: "WhatsApp", nilai: KONTAK.whatsapp || "6281234567890", ket: "Chat langsung dengan tim NEXORA.", aktif: true },
+    { id: "k3", tipe: "email", label: "Email", nilai: "halo@nexora.id", ket: "Untuk pertanyaan dan kerja sama.", aktif: true }
+  ];
+}
+function kontakData() {
+  try { const v = localStorage.getItem("nx-kontak"); if (v) { const a = JSON.parse(v); if (Array.isArray(a)) return a; } } catch (x) {}
+  return kontakBawaan();
+}
+(function () {
+  const a = kontakData().filter(function (k) { return k.aktif !== false; });
+  const d = a.filter(function (k) { return k.tipe === "discord"; })[0], w = a.filter(function (k) { return k.tipe === "whatsapp"; })[0];
+  if (d) KONTAK.discord = d.nilai;
+  if (w) KONTAK.whatsapp = String(w.nilai).replace(/\D/g, "");
+})();
 
 /* ===== 2. DATA HARGA (semua angka hanya contoh, silakan ganti) =====
    Tiap paket: nama, kat (kategori), harga (angka), ringkas, fitur[], populer (opsional).
@@ -377,10 +405,10 @@ const PLUG = {
   a: ["Paper", "Spigot", "Fabric", "Forge", "EssentialsX", "LuckPerms", "Geyser", "Floodgate", "Simple Voice Chat", "ViaVersion", "WorldEdit"],
 };
 
-/* Gambar plugin: taruh file di folder img/plugins/ dengan nama huruf kecil, spasi jadi "-".
-   Contoh: Paper -> img/plugins/paper.png, Simple Voice Chat -> img/plugins/simple-voice-chat.png
+/* Gambar plugin: taruh file di folder assets/img/plugin/ dengan nama huruf kecil, spasi jadi "-".
+   Contoh: Paper -> assets/img/plugin/paper.png, Simple Voice Chat -> assets/img/plugin/simple-voice-chat.png
    Format yang dicoba berurutan: png, webp, svg, jpg. Kalau file tidak ada, huruf pertama dipakai. */
-const PLUG_IMG = { folder: "img/plugin/", ext: ["png", "webp", "svg", "jpg"] };
+const PLUG_IMG = { folder: ASSET_BASE + "img/plugin/", ext: ["png", "webp", "svg", "jpg"] };
 /* Kecepatan marquee: detik per item. Makin kecil makin cepat (bawaan 5) */
 const PLUG_DETIK = { cta: 3 };
 
@@ -471,10 +499,10 @@ function pasangSort(sort) {
 }
 
 /* ===== Kartu harga =====
-   Foto kartu jasa: taruh di img/paket/ dengan nama paket huruf kecil, spasi/simbol jadi "-".
-   Contoh: "Vanilla Starter" -> img/paket/vanilla-starter.jpg (disarankan 16:9, mis. 1280x720).
+   Foto kartu jasa: taruh di assets/img/paket/ dengan nama paket huruf kecil, spasi/simbol jadi "-".
+   Contoh: "Vanilla Starter" -> assets/img/paket/vanilla-starter.jpg (disarankan 16:9, mis. 1280x720).
    Format yang dicoba berurutan: jpg, webp, png. Kalau belum ada, tampil ikon pengganti. */
-const FOTO_PAKET = { folder: "img/paket/", ext: ["jpg", "webp", "png"] };
+const FOTO_PAKET = { folder: ASSET_BASE + "img/paket/", ext: ["jpg", "webp", "png"] };
 const FOTO_CACHE = {};
 const IKON_PLATFORM = {
   minecraft: '<path d="M12 3 20 7.5v9L12 21 4 16.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/>',
@@ -670,8 +698,11 @@ document.addEventListener("DOMContentLoaded", function () {
   pasangMarquee();
   pasangSpot();
   pasangKontak();
+  pasangKontakPage();
+  pasangToc();
   pasangAkun();
   isiMulai();
+  pasangQr();
 });
 
 function posisiMenu(m) {
@@ -687,7 +718,53 @@ function pasangAkun() {
   let role = "", name = "";
   try { const w = window.__nxS || {}; role = w["nx-role"] || sessionStorage.getItem("nx-role") || ""; name = w["nx-name"] || sessionStorage.getItem("nx-name") || ""; } catch (x) {}
   if (!role) return;
-  b.href = role === "admin" ? "nexora-admin.html" : "dashboard.html";
+  b.href = ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html");
   b.classList.add("on"); b.setAttribute("aria-label", "Akun: " + (name || "Dashboard"));
   const s = b.querySelector("span"); if (s) s.textContent = (name || "Akun").split(" ")[0].slice(0, 12);
+}
+
+/* QR Code dari dashboard admin (demo: disimpan di browser yang sama) */
+function pasangQr() {
+  let q = "";
+  try { q = localStorage.getItem("nx-qr") || ""; } catch (x) {}
+  if (q.indexOf("data:image/") !== 0) return;
+  document.querySelectorAll(".qr-box").forEach(function (box) {
+    let im = box.querySelector("img");
+    if (!im) { im = document.createElement("img"); im.alt = "QR Discord NEXORA"; box.insertBefore(im, box.firstChild); }
+    im.removeAttribute("onerror"); im.onerror = null;
+    im.src = q;
+    box.classList.remove("empty");
+  });
+}
+
+
+/* ===== Halaman Hubungi kami ===== */
+function escK(x) { return String(x).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function pasangKontakPage() {
+  const box = document.getElementById("kontak-list"); if (!box) return;
+  const a = kontakData().filter(function (k) { return k.aktif !== false; });
+  box.innerHTML = a.length ? a.map(function (k) {
+    const t = KONTAK_TIPE[k.tipe] || KONTAK_TIPE.lainnya, v = String(k.nilai || "");
+    let href = v, tampil = v.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+    if (k.tipe === "email") href = "mailto:" + v;
+    else if (k.tipe === "whatsapp") { const d = v.replace(/\D/g, ""); href = "https://wa.me/" + d; tampil = "+" + d; }
+    else if (!/^https?:\/\//i.test(href)) href = "https://" + href;
+    const blank = k.tipe === "email" ? "" : ' target="_blank" rel="noopener"';
+    return '<article class="kc" data-t="' + escK(k.tipe) + '"><span class="kc-i"><i class="bi bi-' + t[1] + '"></i></span><div class="kc-t"><small>' + escK(k.label || t[0]) + "</small><b>" + escK(tampil) + "</b>" + (k.ket ? "<p>" + escK(k.ket) + "</p>" : "") +
+      '</div><div class="kc-a"><a class="btn" href="' + escK(href) + '"' + blank + ">" + t[2] + '</a><button class="kc-cp" type="button" data-cp="' + escK(k.tipe === "whatsapp" ? tampil : v) + '" aria-label="Salin ' + escK(k.label || t[0]) + '"><i class="bi bi-copy"></i></button></div></article>';
+  }).join("") : '<p class="note">Belum ada kontak yang ditampilkan.</p>';
+  box.addEventListener("click", function (ev) {
+    const b = ev.target.closest("[data-cp]"); if (!b) return;
+    const v = b.dataset.cp, ok = function () { const i = b.querySelector("i"); i.className = "bi bi-check2"; setTimeout(function () { i.className = "bi bi-copy"; }, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(v).then(ok, function () {}); else { const x = document.createElement("textarea"); x.value = v; document.body.appendChild(x); x.select(); try { document.execCommand("copy"); ok(); } catch (e) {} x.remove(); }
+  });
+}
+
+/* ===== Daftar isi halaman legal: tandai bagian yang sedang dibaca ===== */
+function pasangToc() {
+  const links = [].slice.call(document.querySelectorAll(".legal-toc a")); if (!links.length || !("IntersectionObserver" in window)) return;
+  const io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) links.forEach(function (l) { l.setAttribute("aria-current", String(l.getAttribute("href") === "#" + e.target.id)); }); });
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  links.forEach(function (l) { const t = document.getElementById(l.getAttribute("href").slice(1)); if (t) io.observe(t); });
 }

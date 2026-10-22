@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dashboard – NEXORA</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script>(function(){var d=document.documentElement;d.className+=" js";var t=null;try{t=localStorage.getItem("nexora-theme")}catch(e){}if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}d.dataset.theme=t})()</script>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dash.css">
+<script src="../assets/js/script.js" defer></script>
+<script src="../assets/js/dash.js" defer></script>
+</head>
+<body>
+<header class="topbar bare">
+  <div class="wrap">
+    <a class="logo" href="../index.html"><span class="logo-card"><img src="../assets/img/logo.png" alt="NEXORA" style="width: 45px; height: 45px;"></span><span class="logo-name">NEXORA</span></a>
+    <div class="nav-right">
+      <a class="btn btn-icon dc-icon" href="https://discord.gg/7bFYCRheRm" target="_blank" rel="noopener" aria-label="Server Discord" title="Server Discord"><i class="bi bi-discord"></i></a>
+      <button class="icon-btn theme-toggle" type="button" aria-label="Ganti mode terang atau gelap"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+      </div>
+  </div>
+</header>
+
+<div class="dash" data-dash="cust"><aside class="side"><button class="stab" id="side-t" type="button" aria-label="Perlebar tab"><i class="bi bi-chevron-double-right"></i><span>Persempit</span></button><div class="who"><span class="av" id="wav"></span><div><b id="who"></b><small>Customer</small></div></div><small class="sl">Utama</small><button class="stab" type="button" data-tab="ringkasan" title="Dashboard" aria-label="Dashboard" aria-selected="false"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></button><button class="stab" type="button" data-tab="pesanan" title="Riwayat pesanan" aria-label="Riwayat pesanan" aria-selected="false"><i class="bi bi-receipt"></i><span>Riwayat pesanan</span></button><button class="stab" type="button" data-tab="tagihan" title="Tagihan" aria-label="Tagihan" aria-selected="false"><i class="bi bi-wallet2"></i><span>Tagihan</span><em class="cnt" id="c-tagihan" hidden></em></button><button class="stab" type="button" data-tab="tiket" title="Ticket saya" aria-label="Ticket saya" aria-selected="false"><i class="bi bi-chat-dots"></i><span>Ticket saya</span><em class="cnt" id="c-tiket" hidden></em></button><button class="stab" type="button" data-tab="riwayat" title="Riwayat ticket" aria-label="Riwayat ticket" aria-selected="false"><i class="bi bi-clock-history"></i><span>Riwayat ticket</span></button><button class="stab" type="button" data-tab="buka" title="Buka ticket" aria-label="Buka ticket" aria-selected="false"><i class="bi bi-plus-circle"></i><span>Buka ticket</span></button><small class="sl">Akun</small><button class="stab" type="button" data-tab="profil" title="Profil" aria-label="Profil" aria-selected="false"><i class="bi bi-person"></i><span>Profil</span></button><a class="stab home" href="../index.html" title="Kembali ke beranda" aria-label="Kembali ke beranda"><i class="bi bi-house"></i><span>Beranda</span></a><button class="stab" id="logout" type="button" title="Logout" aria-label="Logout"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button></aside><main class="dmain"><h1 id="ptitle">Dashboard Customer</h1><p class="sub" id="psub"></p><section class="dpanel" id="p-ringkasan" hidden></section><section class="dpanel" id="p-pesanan" hidden></section><section class="dpanel" id="p-tagihan" hidden></section><section class="dpanel" id="p-tiket" hidden></section><section class="dpanel" id="p-riwayat" hidden></section><section class="dpanel" id="p-buka" hidden></section><section class="dpanel" id="p-profil" hidden></section></main></div>
+</body>
+</html>
