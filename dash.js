@@ -76,7 +76,7 @@
     function setWide(w) { root.classList.toggle("wide", w); var b = $("#side-t"); $("i", b).className = "bi bi-chevron-double-" + (w ? "left" : "right"); b.setAttribute("aria-label", w ? "Persempit tab" : "Perlebar tab"); }
     function out() { ss("nx-role", ""); go(adm ? "nexora-admin-access.html" : "masuk.html"); }
     function outAsk() {
-      modal('<div class="mbox sm"><div class="mh"><b>Keluar dari akun?</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><p>Apakah kamu yakin ingin keluar dari akun?</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn dng" data-ok>Ya, keluar</button></div></div>', function (m, close) {
+      modal('<div class="mbox sm warn" role="alertdialog" aria-modal="true" aria-labelledby="lo-t"><span class="warn-ic"><i class="bi bi-box-arrow-right"></i></span><div class="mb"><h3 id="lo-t">Keluar dari akun?</h3><p>Apakah kamu yakin ingin keluar dari akun?</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn dng" data-ok>Ya, keluar</button></div></div>', function (m, close) {
         $("[data-ok]", m).addEventListener("click", out);
         m.addEventListener("keydown", function (ev) { if (ev.key === "Escape") close(); });
         $("[data-x].btn", m).focus();
@@ -111,7 +111,7 @@
       var act = adm ? (closed ? bd(t.st) : '<select class="sel" data-st aria-label="Status">' + ["Terbuka", "Diproses", "Menunggu pembayaran"].map(function (s) { return "<option" + (s === t.st ? " selected" : "") + ">" + s + "</option>"; }).join("") + '</select><button class="btn dng sm" type="button" data-close><i class="bi bi-x-lg"></i> Close ticket</button>') : bd(t.st);
       return '<div class="th"><div class="th-h">' + (adm ? '<button class="ib bk-b" type="button" data-back aria-label="Kembali"><i class="bi bi-chevron-left"></i></button>' : "") + '<div class="th-t"><b>' + e(t.subj) + "</b><small>" + e(t.id) + " · " + e(t.kat) + (t.paket !== "-" ? " · " + e(t.paket) : "") + " · " + e(t.tgl) + (adm ? " · " + e(uname(t)) : "") + '</small></div><div class="th-a">' + act + "</div></div>" +
         '<div class="th-m">' + body + "</div>" +
-        (closed ? '<p class="muted done"><i class="bi bi-chat-dots"></i> Ticket ini sudah ditutup, chat tidak bisa dikirim lagi.' + (adm ? "" : " Buka ticket baru kalau masih butuh bantuan.") + "</p>" : '<form class="th-f" data-rep><textarea class="cmp" rows="1" placeholder="Tulis pesan… (Enter untuk kirim)" required></textarea><button class="send" type="submit" aria-label="Kirim"><i class="bi bi-send"></i></button></form>') + "</div>";
+        (closed ? '<p class="muted done"><i class="bi bi-chat-dots"></i> Ticket ini sudah ditutup, chat tidak bisa dikirim lagi.' + (adm ? "" : " Buka ticket baru kalau masih butuh bantuan.") + "</p>" : '<form class="th-f" data-rep><textarea class="cmp" rows="1" placeholder="Tulis pesan…" enterkeyhint="send" required></textarea><button class="send" type="submit" aria-label="Kirim"><i class="bi bi-send"></i></button></form>') + "</div>";
     }
     function admList() {
       var a = TK().filter(function (x) { return inAf(x, af) && (x.subj + " " + uname(x) + " " + x.id).toLowerCase().indexOf(aq.toLowerCase()) > -1; });
@@ -173,9 +173,17 @@
         '<div class="row2"><label class="fld"><span>Kategori <em class="req">*</em></span><input class="inp" name="kat" list="kt" required value="' + e(p.kat) + '"><datalist id="kt">' + Object.keys(cats).map(function (c) { return '<option value="' + e(c) + '">'; }).join("") + '</datalist></label><label class="fld"><span>Harga (Rp) <em class="req">*</em></span><input class="inp" name="harga" type="number" min="0" required value="' + (p.harga == null ? "" : p.harga) + '"></label></div>' +
         '<label class="fld"><span>Deskripsi singkat</span><input class="inp" name="ringkas" value="' + e(p.ringkas) + '"></label>' +
         '<label class="fld"><span>Isi paket (satu fitur per baris)</span><textarea class="txa" name="fitur">' + e((p.fitur || []).join("\n")) + "</textarea></label>" +
-        (j ? '<div class="fld"><span>Foto</span><div class="fp"><div class="logo-prev" id="fp">' + (foto ? '<img src="' + foto + '" alt="">' : '<i class="bi bi-image"></i>') + '</div><div><input type="file" accept="image/*" id="pf"><button type="button" class="btn ghost sm" id="pf-x">Hapus foto</button></div></div></div>' : "") +
+        (j ? '<div class="fgrp"><span class="mlb">Foto</span><div class="upl"><input class="upl-in" type="file" accept="image/*" id="pf"><label class="upl-box" for="pf"><span class="upl-pv" id="fp">' + (foto ? '<img src="' + foto + '" alt="">' : '<i class="bi bi-image"></i>') + '</span><span class="upl-t"><b>Foto paket</b><small id="pf-name">' + (foto ? "Foto aktif. Klik atau seret gambar baru." : PF_TXT) + '</small></span><span class="btn sm upl-btn"><i class="bi bi-cloud-arrow-up"></i> Pilih foto</span></label><button type="button" class="btn ghost sm" id="pf-x"><i class="bi bi-trash3"></i> Hapus foto</button></div></div>' : "") +
         '</div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button class="btn" type="submit">Simpan</button></div></form>', function (m, close) {
-        var pf = $("#pf", m); if (pf) { pf.addEventListener("change", function () { if (pf.files[0]) shrink(pf.files[0], 640, "image/jpeg", function (d) { foto = d; $("#fp", m).innerHTML = '<img src="' + d + '" alt="">'; }); }); $("#pf-x", m).addEventListener("click", function () { foto = ""; $("#fp", m).innerHTML = '<i class="bi bi-image"></i>'; }); }
+        var pf = $("#pf", m); if (pf) {
+          var setF = function (file) { if (!file || file.type.indexOf("image/") !== 0) return toast("File harus berupa gambar"); shrink(file, 640, "image/jpeg", function (d) { foto = d; $("#fp", m).innerHTML = '<img src="' + d + '" alt="">'; $("#pf-name", m).textContent = file.name + " · " + Math.max(1, Math.round(file.size / 1024)) + " KB"; }); };
+          pf.addEventListener("change", function () { if (pf.files[0]) setF(pf.files[0]); pf.value = ""; });
+          var ub = $(".upl-box", m);
+          ub.addEventListener("dragover", function (ev) { ev.preventDefault(); ub.classList.add("drag"); });
+          ub.addEventListener("dragleave", function () { ub.classList.remove("drag"); });
+          ub.addEventListener("drop", function (ev) { ev.preventDefault(); ub.classList.remove("drag"); setF(ev.dataTransfer.files[0]); });
+          $("#pf-x", m).addEventListener("click", function () { foto = ""; $("#fp", m).innerHTML = '<i class="bi bi-image"></i>'; $("#pf-name", m).textContent = PF_TXT; });
+        }
         $("#f-pkt", m).addEventListener("submit", function (ev) {
           ev.preventDefault(); var f = ev.target, it = { nama: f.nama.value.trim(), kat: f.kat.value.trim(), harga: Number(f.harga.value), ringkas: f.ringkas.value.trim(), fitur: f.fitur.value.split("\n").map(function (x) { return x.trim(); }).filter(Boolean) };
           if (j && foto) it.foto = foto;
@@ -185,8 +193,9 @@
       });
     }
     var UPL_TXT = "PNG, JPG, atau WEBP. Klik atau seret gambar ke sini.";
+    var PF_TXT = "JPG, PNG, atau WEBP. Disarankan rasio 16:9.";
     function uplHTML(T) {
-      return '<div class="upl"><input class="upl-in" type="file" accept="image/*" id="lg"><label class="upl-box" for="lg"><span class="upl-pv" id="upl-pv">' + (T.logo ? '<img src="' + T.logo + '" alt="">' : '<i class="bi bi-image"></i>') + '</span><span class="upl-t"><b>Logo situs</b><small id="upl-name">' + (T.logo ? "Logo aktif. Klik atau seret gambar baru ke sini." : UPL_TXT) + '</small></span><span class="btn ghost sm upl-btn"><i class="bi bi-upload"></i> Pilih file</span></label><button class="btn ghost sm" id="lg-x" type="button"><i class="bi bi-trash3"></i> Hapus logo</button></div>';
+      return '<div class="upl"><input class="upl-in" type="file" accept="image/*" id="lg"><label class="upl-box" for="lg"><span class="upl-pv" id="upl-pv">' + (T.logo ? '<img src="' + T.logo + '" alt="">' : '<i class="bi bi-image"></i>') + '</span><span class="upl-t"><b id="upl-ttl">' + (T.logo ? "Logo aktif" : "Unggah logo") + '</b><small id="upl-name">' + (T.logo ? "Klik atau seret gambar baru untuk mengganti." : UPL_TXT) + '</small></span><span class="btn sm upl-btn"><i class="bi bi-cloud-arrow-up"></i> Pilih file</span></label><button class="btn ghost sm" id="lg-x" type="button"><i class="bi bi-trash3"></i> Hapus logo</button></div>';
     }
     function setLogo(file) {
       if (!file || file.type.indexOf("image/") !== 0) return toast("File harus berupa gambar");
@@ -194,6 +203,7 @@
         root._T.logo = d; $("#nvl").innerHTML = '<img src="' + d + '" alt="Logo">';
         var pv = $("#upl-pv"); if (pv) pv.innerHTML = '<img src="' + d + '" alt="">';
         var nm = $("#upl-name"); if (nm) nm.textContent = file.name + " · " + Math.max(1, Math.round(file.size / 1024)) + " KB";
+        var tt = $("#upl-ttl"); if (tt) tt.textContent = "Logo dipilih";
       });
     }
     function tampilan() {
@@ -410,7 +420,7 @@
       PAN[tab]();
       var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1];
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight;
-      root.classList.toggle("chatv", adm && tab === "tiket" && tv === "chat" && !!sel);
+      root.classList.toggle("chatv", !!sel && (adm ? (tab === "tiket" && tv === "chat") : (tab === "tiket" || tab === "riwayat")));
       var ct = $("#c-tiket"); if (ct) { var cc = (adm ? TK().filter(function (x) { return x.st === "Terbuka"; }) : mine().filter(function (x) { return x.st !== "Selesai"; })).length; ct.textContent = cc; ct.hidden = !cc; }
       var cb = $("#c-tagihan"); if (cb) { var nb = BL().filter(function (b) { return b.st === "Belum dibayar" && (adm ? dleft(b.jatuh) < 0 : bmine(b)); }).length; cb.textContent = nb; cb.hidden = !nb; }
       mk();
@@ -439,7 +449,7 @@
       if (d.del !== undefined) { var H = HG(), r = tab === "hosting" ? H.hosting : H.jasa[hs], i = Number(d.del); return modal('<div class="mbox sm"><div class="mh"><b>Hapus paket?</b></div><div class="mb"><p class="muted">Paket "' + e(r[i].nama) + '" akan dihapus dari daftar.</p></div><div class="mf"><button class="btn ghost" data-x>Batal</button><button class="btn dng" data-ok>Hapus</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { r.splice(i, 1); sv("nx-harga", H); close(); toast("Paket dihapus"); draw(); }); }); }
       if (d.exp) { var b = new Blob([JSON.stringify(d.exp === "nx-harga" ? HG() : ld(d.exp, []), null, 2)], { type: "application/json" }), l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = d.exp + ".json"; l.click(); return; }
       if (d.c) { root._T.warna = d.c; $$(".sw", root).forEach(function (s) { s.setAttribute("aria-pressed", s === t); }); $("#pvb").style.setProperty("--pv", d.c); return; }
-      if (t.id === "lg-x") { root._T.logo = ""; $("#nvl").innerHTML = '<i class="bi bi-box2"></i>'; var pv = $("#upl-pv"); if (pv) pv.innerHTML = '<i class="bi bi-image"></i>'; var nm = $("#upl-name"); if (nm) nm.textContent = UPL_TXT; return; }
+      if (t.id === "lg-x") { root._T.logo = ""; $("#nvl").innerHTML = '<i class="bi bi-box2"></i>'; var pv = $("#upl-pv"); if (pv) pv.innerHTML = '<i class="bi bi-image"></i>'; var nm = $("#upl-name"); if (nm) nm.textContent = UPL_TXT; var tt = $("#upl-ttl"); if (tt) tt.textContent = "Unggah logo"; return; }
       if (t.id === "sv-tmp") { sv("nx-tampilan", root._T); return toast("Tampilan tersimpan (demo, belum mengubah web asli)"); }
       if (t.id === "rs-tmp") { sv("nx-tampilan", null); try { localStorage.removeItem("nx-tampilan"); } catch (x2) {} delete mem["nx-tampilan"]; tampilan(); return toast("Tampilan dikembalikan ke awal"); }
     });
