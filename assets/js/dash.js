@@ -15,26 +15,31 @@
   function rp(n) { return "Rp\u00a0" + Number(n).toLocaleString("id-ID"); }
   function toast(t) { var d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 3200); }
   function av(n) { return '<span class="av">' + e(String(n || "?").trim().charAt(0).toUpperCase()) + "</span>"; }
-  var ST = ["Terbuka", "Diproses", "Menunggu pembayaran", "Selesai"];
-  var BC = { Terbuka: "b1", Diproses: "b2", "Menunggu pembayaran": "b3", Menunggu: "b3", Selesai: "b4", "Belum dibayar": "b1", Terlambat: "b5", Lunas: "b4", Dibatalkan: "b6" };
-  function bd(s, short) { return '<span class="bd ' + (BC[s] || "b1") + '">' + e(short && s === "Menunggu pembayaran" ? "Pembayaran" : s) + "</span>"; }
+  var ST = ["Menunggu admin balas", "Terhubung dengan admin", "Menunggu pembayaran", "Pembayaran Dikonfirmasi", "Pesanan Diproses", "Orderan Selesai"];
+  var SHORT = { "Menunggu admin balas": "Menunggu balas", "Terhubung dengan admin": "Terhubung", "Menunggu pembayaran": "Pembayaran", "Pembayaran Dikonfirmasi": "Dikonfirmasi", "Pesanan Diproses": "Diproses", "Orderan Selesai": "Order selesai" };
+  var BC = { "Menunggu admin balas": "b1", "Terhubung dengan admin": "b2", "Menunggu pembayaran": "b3", "Pembayaran Dikonfirmasi": "b7", "Pesanan Diproses": "b8", "Orderan Selesai": "b4", Menunggu: "b3", Selesai: "b4", Diproses: "b8", Terbuka: "b1", "Belum dibayar": "b1", Terlambat: "b5", Lunas: "b4", Dibatalkan: "b6", Ditutup: "b6" };
+  function bd(s, short) { return '<span class="bd ' + (BC[s] || "b1") + '">' + e(short && SHORT[s] ? SHORT[s] : s) + "</span>"; }
+  var MAXT = 3;
   function me() { return ss("nx-name") || "Customer"; }
   function uname(t) { return t.user === "__me" ? (window.__nxAdm ? ld("nx-cust", "Demo Customer") : me()) : t.user; }
-  function TK() { return ld("nx-tk", [
+  var LEG = { Terbuka: "Menunggu admin balas", Diproses: "Pesanan Diproses", Selesai: "Orderan Selesai" };
+  function mig(a) { a.forEach(function (x) { if (LEG[x.st]) { if (x.st === "Selesai") x.closed = true; x.st = LEG[x.st]; } }); return a; }
+  function cl(x) { return x.closed === true; }
+  function TK() { return mig(ld("nx-tk", [
     { id: "T-1043", subj: "Tanya perpanjangan hosting", kat: "Bantuan", paket: "-", st: "Terbuka", tgl: "20 Okt 2026", user: "__me", m: [{ w: "c", t: "Bagaimana cara memperpanjang paket hosting?", d: "20 Okt" }] },
     { id: "T-1042", subj: "Setup Survival Plugin", kat: "Order baru", paket: "Survival Plugin", st: "Diproses", tgl: "18 Okt 2026", user: "__me", m: [{ w: "c", t: "Halo, saya mau pesan setup Survival Plugin untuk server Java.", d: "18 Okt" }, { w: "a", t: "Siap! Versi Java yang kamu pakai berapa?", d: "18 Okt" }, { w: "c", t: "Java 21, sekitar 30 pemain.", d: "18 Okt" }] },
     { id: "T-1031", subj: "Setup Vanilla Starter", kat: "Order baru", paket: "Vanilla Starter", st: "Selesai", tgl: "02 Okt 2026", user: "__me", m: [{ w: "c", t: "Mau pesan Vanilla Starter.", d: "02 Okt" }, { w: "a", t: "Server sudah jadi, detailnya sudah kami kirim. Terima kasih!", d: "03 Okt" }] },
     { id: "T-1040", subj: "Setup Discord Server Gaming", kat: "Order baru", paket: "Server Gaming", st: "Menunggu pembayaran", tgl: "15 Okt 2026", user: "Rizky", m: [{ w: "c", t: "Mau setup Discord untuk komunitas gaming.", d: "15 Okt" }, { w: "a", t: "Harga final sudah kami kirim, silakan konfirmasi pembayaran.", d: "15 Okt" }] },
-    { id: "T-1038", subj: "Whitelist tidak berfungsi", kat: "Bantuan", paket: "-", st: "Selesai", tgl: "12 Okt 2026", user: "Andi", m: [{ w: "c", t: "Whitelist tidak jalan di server saya.", d: "12 Okt" }, { w: "a", t: "Sudah diperbaiki ya, coba cek lagi.", d: "12 Okt" }] }]); }
+    { id: "T-1038", subj: "Whitelist tidak berfungsi", kat: "Bantuan", paket: "-", st: "Selesai", tgl: "12 Okt 2026", user: "Andi", m: [{ w: "c", t: "Whitelist tidak jalan di server saya.", d: "12 Okt" }, { w: "a", t: "Sudah diperbaiki ya, coba cek lagi.", d: "12 Okt" }] }])); }
   function OR() { return ld("nx-or", [
-    { id: "ORD-2044", item: "Survival Plugin", jenis: "Setup Minecraft", tgl: "18 Okt 2026", st: "Diproses" },
-    { id: "ORD-2031", item: "Vanilla Starter", jenis: "Setup Minecraft", tgl: "02 Okt 2026", st: "Selesai" }]); }
+    { id: "ORD-2044", tk: "T-1042", item: "Survival Plugin", jenis: "Setup Minecraft", tgl: "18 Okt 2026", st: "Diproses" },
+    { id: "ORD-2031", tk: "T-1031", item: "Vanilla Starter", jenis: "Setup Minecraft", tgl: "02 Okt 2026", st: "Selesai" }]); }
   function HG() { return ld("nx-harga", D); }
   var SI = { "Ticket terbuka": "chat-dots", "Sedang diproses": "lightning-charge", "Total ticket": "tags", "Total pesanan": "receipt", "Ticket aktif": "chat-dots", "Ticket selesai": "check2", "Pesanan berjalan": "lightning-charge", "Menunggu pembayaran": "receipt", "Tagihan aktif": "cash-stack" };
   function stat(l, v) { return '<div class="dstat"><span class="si"><i class="bi bi-' + SI[l] + '"></i></span><div><small>' + l + "</small><b>" + v + "</b></div></div>"; }
-  function table(h, rows) {
-    rows = rows.replace(/<tr>([\s\S]*?)<\/tr>/g, function (_, r) { var i = 0; return "<tr>" + r.replace(/<td>/g, function () { return '<td data-l="' + h[i++] + '">'; }) + "</tr>"; });
-    return '<div class="tw"><table class="dt"><thead><tr>' + h.map(function (x) { return "<th>" + x + "</th>"; }).join("") + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+  function table(h, rows, cls) {
+    rows = rows.replace(/<tr>([\s\S]*?)<\/tr>/g, function (_, r) { var i = 0; return "<tr>" + r.replace(/<td( class="[^"]*")?>/g, function (_m, c) { return "<td" + (c || "") + ' data-l="' + h[i++] + '">'; }) + "</tr>"; });
+    return '<div class="tw"><table class="dt' + (cls ? " " + cls : "") + '"><thead><tr>' + h.map(function (x) { return "<th>" + x + "</th>"; }).join("") + "</tr></thead><tbody>" + rows + "</tbody></table></div>";
   }
   function modal(html, mount) {
     var m = document.createElement("div"); m.className = "modal"; m.innerHTML = html; document.body.appendChild(m);
@@ -72,7 +77,7 @@
   }
 
   function dashInit(adm, root) {
-    var ctab = "aktif", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", of = "semua", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {};
+    var ctab = "aktif", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", of = "semua", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", hcat = {};
     var scrim = document.createElement("div"); scrim.className = "side-scrim"; document.body.appendChild(scrim);
     function isMob() { return window.matchMedia("(max-width:820px)").matches; }
     function syncT() {
@@ -120,42 +125,60 @@
     $("#who").textContent = ss("nx-name") || (adm ? "Admin" : "Customer"); var wv = $("#wav"); if (wv) wv.textContent = me().charAt(0).toUpperCase();
     function mine() { return TK().filter(function (x) { return x.user === "__me" || x.user === me(); }); }
     function last(t) { return t.m[t.m.length - 1]; }
-    var AFS = ["Aktif", "Terbuka", "Diproses", "Menunggu pembayaran", "Riwayat"], snap = {};
-    function inAf(x, s) { return s === "Aktif" ? x.st !== "Selesai" : s === "Riwayat" ? x.st === "Selesai" : x.st === s; }
-    function mk() { snap = {}; TK().forEach(function (x) { snap[x.id] = [x.m.length, x.st]; }); }
+    function actCount() { return mine().filter(function (x) { return !cl(x); }).length; }
+    function limitModal() {
+      modal('<div class="mbox sm warn" role="alertdialog" aria-modal="true" aria-labelledby="lm-t"><span class="warn-ic am"><i class="bi bi-exclamation-triangle"></i></span><div class="mb"><h3 id="lm-t">Batas ticket tercapai</h3><p>Kamu sudah mempunyai ' + MAXT + ' ticket aktif silahkan menutup 1 ticket untuk membuat ticket baru.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Mengerti</button><button type="button" class="btn" data-ok>Lihat ticket</button></div></div>', function (m, close) {
+        $("[data-ok]", m).addEventListener("click", function () { close(); tab = "tiket"; setOpen(false); draw(); });
+        $("[data-x].btn", m).focus();
+      });
+    }
+    function syncOrd(x) {
+      var o = OR(), ch = false;
+      o.forEach(function (r) { if (r.tk === x.id) { var n = x.st === "Pesanan Diproses" ? "Diproses" : x.st === "Orderan Selesai" ? "Selesai" : "Menunggu"; if (r.st !== n) { r.st = n; ch = true; } } });
+      if (ch) sv("nx-or", o);
+    }
+    function tkStat(id, st, note) {
+      var a = TK(), ch = false;
+      a.forEach(function (x) { if (x.id === id && !cl(x) && x.st !== st) { x.st = st; x.m.push({ w: "s", t: note || ("Status: " + st), d: "Baru saja" }); ch = true; syncOrd(x); } });
+      if (ch) sv("nx-tk", a);
+    }
+    var AFS = ["Aktif", "Menunggu admin balas", "Terhubung dengan admin", "Menunggu pembayaran", "Pembayaran Dikonfirmasi", "Pesanan Diproses", "Orderan Selesai", "Riwayat"], snap = {};
+    function inAf(x, s) { return s === "Aktif" ? !cl(x) : s === "Riwayat" ? cl(x) : (x.st === s && !cl(x)); }
+    function mk() { snap = {}; TK().forEach(function (x) { snap[x.id] = [x.m.length, x.st, cl(x)]; }); }
     function remote() {
       var cm = $(".cmp", root), val = cm ? cm.value : "", foc = cm && document.activeElement === cm, mw = adm ? "a" : "c";
       TK().forEach(function (x) { var s = snap[x.id], l = last(x);
         if (!s) { if (adm) toast("Ticket baru: " + x.id); return; }
         if (x.m.length > s[0] && l.w !== mw && l.w !== "s") toast("Pesan baru di " + x.id);
-        if (!adm && s[1] !== "Selesai" && x.st === "Selesai") toast("Ticket " + x.id + " ditutup oleh admin"); });
+        if (!adm && !s[2] && cl(x)) toast("Ticket " + x.id + " ditutup oleh admin"); else if (!adm && s[1] !== x.st) toast("Status " + x.id + ": " + x.st); });
       draw(); cm = $(".cmp", root); if (cm && val) { cm.value = val; if (foc) cm.focus(); }
     }
 
     function thread(t, back) {
-      var mineW = adm ? "a" : "c", prev = "", closed = t.st === "Selesai";
+      var mineW = adm ? "a" : "c", prev = "", closed = cl(t);
       var body = '<div class="sys">Ticket dibuat · ' + e(t.tgl) + "</div>" + t.m.map(function (m) {
         if (m.w === "s") { prev = ""; return '<div class="sys">' + e(m.t) + " · " + e(m.d) + "</div>"; }
         var first = m.w !== prev, mn = m.w === mineW; prev = m.w;
         var who = m.w === "a" ? "Admin NEXORA" : (adm ? uname(t) : "Kamu");
         return '<div class="row ' + (mn ? "me" : "ot") + '">' + (mn ? "" : first ? (m.w === "a" ? '<span class="av nx"><i class="bi bi-box2"></i></span>' : av(uname(t))) : '<span class="av gh"></span>') + '<div class="col">' + (first && !mn ? '<small class="nm">' + e(who) + "</small>" : "") + '<div class="bub">' + e(m.t) + "<time>" + e(m.d) + "</time></div></div></div>";
       }).join("") + (closed && last(t).w !== "s" ? '<div class="sys">Ticket ditutup</div>' : "");
-      var act = adm ? (closed ? bd(t.st) : '<select class="sel" data-st aria-label="Status">' + ["Terbuka", "Diproses", "Menunggu pembayaran"].map(function (s) { return "<option" + (s === t.st ? " selected" : "") + ">" + s + "</option>"; }).join("") + '</select><button class="btn dng sm" type="button" data-close><i class="bi bi-x-lg"></i> Close ticket</button>') : bd(t.st);
+      var cbd = closed ? '<span class="bd b6">Ditutup</span>' : "";
+      var act = adm ? (closed ? bd(t.st) + cbd : '<select class="sel" data-st aria-label="Status">' + ST.map(function (s) { return "<option" + (s === t.st ? " selected" : "") + ">" + s + "</option>"; }).join("") + '</select><button class="btn dng sm" type="button" data-close><i class="bi bi-x-lg"></i> Tutup ticket</button>') : bd(t.st) + cbd;
       return '<div class="th"><div class="th-h">' + (adm || back ? '<button class="ib bk-b" type="button" data-back aria-label="Kembali"><i class="bi bi-chevron-left"></i></button>' : "") + '<div class="th-t"><b>' + e(t.subj) + "</b><small>" + e(t.id) + " · " + e(t.kat) + (t.paket !== "-" ? " · " + e(t.paket) : "") + " · " + e(t.tgl) + (adm ? " · " + e(uname(t)) : "") + '</small></div><div class="th-a">' + act + "</div></div>" +
         '<div class="th-m">' + body + "</div>" +
         (closed ? '<p class="muted done"><i class="bi bi-chat-dots"></i> Ticket ini sudah ditutup, chat tidak bisa dikirim lagi.' + (adm ? "" : " Buka ticket baru kalau masih butuh bantuan.") + "</p>" : '<form class="th-f" data-rep><textarea class="cmp" rows="1" placeholder="Tulis pesan…" enterkeyhint="send" required></textarea><button class="send" type="submit" aria-label="Kirim"><i class="bi bi-send"></i></button></form>') + "</div>";
     }
     function admList() {
       var a = TK().filter(function (x) { return inAf(x, af) && (x.subj + " " + uname(x) + " " + x.id).toLowerCase().indexOf(aq.toLowerCase()) > -1; });
-      return a.map(function (x) { var l = last(x); return '<button class="tk-item" data-id="' + x.id + '" aria-current="' + (x.id === sel) + '">' + av(uname(x)) + '<span class="ti"><b>' + (x.st !== "Selesai" && l.w === "c" ? '<i class="dot" title="Menunggu balasan"></i>' : "") + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(uname(x)) + '</small><span class="pv">' + e(l.t) + '</span></span><span class="tr"><small>' + e(l.d) + "</small>" + bd(x.st, 1) + "</span></button>"; }).join("") || '<p class="muted pad">Tidak ada ticket.</p>';
+      return a.map(function (x) { var l = last(x); return '<button class="tk-item" data-id="' + x.id + '" aria-current="' + (x.id === sel) + '">' + av(uname(x)) + '<span class="ti"><b>' + (!cl(x) && l.w === "c" ? '<i class="dot" title="Menunggu balasan"></i>' : "") + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(uname(x)) + '</small><span class="pv">' + e(l.t) + '</span></span><span class="tr"><small>' + e(l.d) + "</small>" + bd(x.st, 1) + "</span></button>"; }).join("") || '<p class="muted pad">Tidak ada ticket.</p>';
     }
     function histList() {
       var q = aq.toLowerCase();
-      var a = mine().filter(function (x) { return x.st === "Selesai" && (x.subj + " " + x.id + " " + x.paket + " " + x.kat).toLowerCase().indexOf(q) > -1; });
+      var a = mine().filter(function (x) { return cl(x) && (x.subj + " " + x.id + " " + x.paket + " " + x.kat).toLowerCase().indexOf(q) > -1; });
       return a.map(function (x) { var l = last(x); return '<button class="tk-item" data-id="' + x.id + '" aria-current="' + (x.id === sel) + '"><span class="hs-ic"><i class="bi bi-check2-circle"></i></span><span class="ti"><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(x.kat) + (x.paket !== "-" ? " · " + e(x.paket) : "") + '</small><span class="pv">' + e(l.t) + '</span></span><span class="tr"><small>' + e(x.tgl) + "</small>" + bd(x.st) + "</span></button>"; }).join("") || '<p class="muted pad">Tidak ada riwayat yang cocok.</p>';
     }
     function histPanel() {
-      var all = mine().filter(function (x) { return x.st === "Selesai"; });
+      var all = mine().filter(function (x) { return cl(x); });
       if (!all.length) return '<div class="dcard empty"><i class="bi bi-clock-history"></i><b>Belum ada riwayat ticket</b><p class="muted">Ticket yang ditutup admin akan masuk ke sini.</p></div>';
       if (!all.some(function (x) { return x.id === sel; })) sel = null;
       var t = all.filter(function (x) { return x.id === sel; })[0];
@@ -165,7 +188,7 @@
       if (!adm) {
         var hist = tab === "riwayat"; tg = hist ? "selesai" : "aktif";
         if (hist) return histPanel();
-        var a = mine(), cur = a.filter(function (x) { return (x.st === "Selesai") === hist; });
+        var a = mine(), cur = a.filter(function (x) { return cl(x) === hist; });
         if (!cur.some(function (x) { return x.id === sel; })) sel = cur.length ? cur[0].id : null;
         var t = cur.filter(function (x) { return x.id === sel; })[0];
         var head = '<div class="tkhead"><span class="muted">' + cur.length + (hist ? " ticket selesai" : " ticket aktif") + "</span>" + (hist ? "" : '<button class="btn ghost" data-go="buka"><i class="bi bi-plus-circle"></i> Ticket baru</button>') + "</div>";
@@ -175,7 +198,7 @@
       var all = TK();
       if (!all.some(function (x) { return x.id === sel; })) sel = null;
       var t2 = all.filter(function (x) { return x.id === sel; })[0];
-      var chips = AFS.map(function (s) { var n = all.filter(function (x) { return inAf(x, s); }).length; return '<button class="chip" data-af="' + s + '" aria-pressed="' + (af === s) + '">' + (s === "Menunggu pembayaran" ? "Pembayaran" : s) + " <b>" + n + "</b></button>"; }).join("");
+      var chips = AFS.map(function (s) { var n = all.filter(function (x) { return inAf(x, s); }).length; return '<button class="chip" data-af="' + s + '" aria-pressed="' + (af === s) + '">' + (SHORT[s] || s) + " <b>" + n + "</b></button>"; }).join("");
       return '<div class="tk adm ' + (sel ? tv : "list") + '"><div class="tk-side"><div class="tk-tools"><label class="sbox"><i class="bi bi-search"></i><input class="inp" data-q type="search" placeholder="Cari ticket atau customer…" value="' + e(aq) + '"></label><div class="chips mini">' + chips + '</div></div><div class="tk-list">' + admList() + '</div></div><div class="tk-chat">' + (t2 ? thread(t2) : '<div class="dcard empty"><i class="bi bi-chat-dots"></i><b>Pilih ticket</b><p class="muted">Pilih ticket di kiri untuk melihat dan membalas.</p></div>') + "</div></div>";
     }
     function ddBuild(f, rows) {
@@ -206,20 +229,46 @@
     }
     function li(a) { return a.map(function (x) { return '<button class="li" data-gt="' + x.id + '"><span><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(x.tgl) + "</small></span>" + bd(x.st) + "</button>"; }).join("") || '<p class="muted">Belum ada.</p>'; }
     function harga(kind) {
-      var H = HG(), rows = kind === "hosting" ? H.hosting : H.jasa[hs], j = kind === "jasa";
-      var tr = rows.map(function (p, i) { return "<tr>" + (j ? '<td><span class="thumb">' + (p.foto ? '<img src="' + p.foto + '" alt="">' : '<i class="bi bi-image"></i>') + "</span></td>" : "") + "<td>" + e(p.nama) + "</td><td>" + e(p.kat) + "</td><td>" + rp(p.harga) + '</td><td class="act"><button class="ib" data-edit="' + i + '" aria-label="Edit"><i class="bi bi-pencil"></i></button><button class="ib dn" data-del="' + i + '" aria-label="Hapus"><i class="bi bi-trash"></i></button></td></tr>'; }).join("");
-      $("#p-" + kind).innerHTML = '<div class="tkhead">' + (j ? '<div class="seg2">' + [["minecraft", "Minecraft"], ["discord", "Discord"]].map(function (x) { return '<button type="button" data-hs="' + x[0] + '" aria-pressed="' + (x[0] === hs) + '">' + x[1] + " <b>" + H.jasa[x[0]].length + "</b></button>"; }).join("") + "</div>" : "<span class=\"muted\">" + rows.length + " paket hosting</span>") + '<button class="btn" data-add><i class="bi bi-plus-circle"></i> Tambah paket</button></div>' + table((j ? ["Foto"] : []).concat(["Paket", "Kategori", "Harga", "Aksi"]), tr);
+      var H = HG(), rows = kind === "hosting" ? H.hosting : H.jasa[hs], j = kind === "jasa", cats = [];
+      rows.forEach(function (p) { if (cats.indexOf(p.kat) < 0) cats.push(p.kat); });
+      var cf = hcat[kind] || "semua"; if (cf !== "semua" && cats.indexOf(cf) < 0) cf = "semua"; hcat[kind] = cf;
+      var head = '<div class="tkhead">' + (j ? '<div class="seg2">' + [["minecraft", "Minecraft"], ["discord", "Discord"]].map(function (x) { return '<button type="button" data-hs="' + x[0] + '" aria-pressed="' + (x[0] === hs) + '">' + x[1] + " <b>" + H.jasa[x[0]].length + "</b></button>"; }).join("") + "</div>" : '<span class="muted">' + rows.length + " paket hosting</span>") + '<button class="btn" type="button" data-add><i class="bi bi-plus-circle"></i> Tambah paket</button></div>';
+      var chips = cats.length > 1 ? '<div class="chips mini pk-chips">' + ["semua"].concat(cats).map(function (c) { var n = c === "semua" ? rows.length : rows.filter(function (p) { return p.kat === c; }).length; return '<button class="chip" type="button" data-hc="' + e(c) + '" aria-pressed="' + (c === cf) + '">' + (c === "semua" ? "Semua" : e(c)) + " <b>" + n + "</b></button>"; }).join("") + "</div>" : "";
+      var card = function (p, i) {
+        var f = p.fitur || [];
+        return '<article class="pkc"><div class="pkc-t">' + (j ? '<span class="thumb">' + (p.foto ? '<img src="' + p.foto + '" alt="">' : '<i class="bi bi-image"></i>') + "</span>" : "") + '<div class="pkc-n"><b>' + e(p.nama) + '</b><span class="pkc-k">' + e(p.kat) + '</span></div><div class="pkc-p"><strong>' + rp(p.harga) + "</strong><small>" + (j ? "sekali bayar" : "per bulan") + "</small></div></div>" +
+          (p.ringkas ? '<p class="pkc-d">' + e(p.ringkas) + "</p>" : "") +
+          '<ul class="pkc-f">' + f.slice(0, 3).map(function (x) { return '<li><i class="bi bi-check2"></i>' + e(x) + "</li>"; }).join("") + (f.length > 3 ? '<li class="more">+' + (f.length - 3) + " fitur lainnya</li>" : "") + (f.length ? "" : '<li class="more">Belum ada isi paket</li>') + "</ul>" +
+          '<div class="pkc-a"><button class="btn ghost sm" type="button" data-edit="' + i + '"><i class="bi bi-pencil"></i> Edit</button><button class="btn ghost sm dn" type="button" data-del="' + i + '"><i class="bi bi-trash"></i> Hapus</button></div></article>';
+      };
+      var body = cats.filter(function (c) { return cf === "semua" || c === cf; }).map(function (c) {
+        var it = rows.map(function (p, i) { return p.kat === c ? card(p, i) : ""; }).join("");
+        return '<section class="pk-grp"><h3 class="pk-gh">' + e(c) + "<small>" + rows.filter(function (p) { return p.kat === c; }).length + ' paket</small></h3><div class="pk-grid">' + it + "</div></section>";
+      }).join("") || '<div class="dcard empty"><i class="bi bi-tags"></i><b>Belum ada paket</b><p class="muted">Klik Tambah paket untuk membuat paket pertama.</p></div>';
+      $("#p-" + kind).innerHTML = head + chips + body;
     }
     function formPaket(kind, idx) {
       var H = HG(), rows = kind === "hosting" ? H.hosting : H.jasa[hs], p = idx == null ? {} : rows[idx], j = kind === "jasa";
-      var cats = {}; rows.forEach(function (x) { cats[x.kat] = 1; }); foto = p.foto || "";
-      modal('<form class="mbox" id="f-pkt"><div class="mh"><b>' + (idx == null ? "Tambah paket" : "Edit paket") + '</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb">' +
-        '<label class="fld"><span>Nama paket <em class="req">*</em></span><input class="inp" name="nama" required value="' + e(p.nama) + '"></label>' +
-        '<div class="row2"><label class="fld"><span>Kategori <em class="req">*</em></span><input class="inp" name="kat" list="kt" required value="' + e(p.kat) + '"><datalist id="kt">' + Object.keys(cats).map(function (c) { return '<option value="' + e(c) + '">'; }).join("") + '</datalist></label><label class="fld"><span>Harga (Rp) <em class="req">*</em></span><input class="inp" name="harga" type="number" min="0" required value="' + (p.harga == null ? "" : p.harga) + '"></label></div>' +
-        '<label class="fld"><span>Deskripsi singkat</span><input class="inp" name="ringkas" value="' + e(p.ringkas) + '"></label>' +
-        '<label class="fld"><span>Isi paket (satu fitur per baris)</span><textarea class="txa" name="fitur">' + e((p.fitur || []).join("\n")) + "</textarea></label>" +
-        (j ? '<div class="fgrp"><span class="mlb">Foto</span><div class="upl"><input class="upl-in" type="file" accept="image/*" id="pf"><label class="upl-box" for="pf"><span class="upl-pv" id="fp">' + (foto ? '<img src="' + foto + '" alt="">' : '<i class="bi bi-image"></i>') + '</span><span class="upl-t"><b>Foto paket</b><small id="pf-name">' + (foto ? "Foto aktif. Klik atau seret gambar baru." : PF_TXT) + '</small></span><span class="btn sm upl-btn"><i class="bi bi-cloud-arrow-up"></i> Pilih foto</span></label><button type="button" class="btn ghost sm" id="pf-x"><i class="bi bi-trash3"></i> Hapus foto</button></div></div>' : "") +
-        '</div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button class="btn" type="submit">Simpan</button></div></form>', function (m, close) {
+      var cats = []; rows.forEach(function (x) { if (cats.indexOf(x.kat) < 0) cats.push(x.kat); }); foto = p.foto || "";
+      var fr = function (v) { return '<div class="frow"><span class="fgrip"><i class="bi bi-check2"></i></span><input class="inp" maxlength="80" value="' + e(v || "") + '" placeholder="Contoh: RAM 2 GB"><button type="button" class="ib dn" data-fx aria-label="Hapus baris"><i class="bi bi-x-lg"></i></button></div>'; };
+      var feats = (p.fitur && p.fitur.length ? p.fitur : [""]).map(fr).join("");
+      modal('<form class="mbox pk" id="f-pkt"><div class="mh"><div><b>' + (idx == null ? "Tambah paket" : "Edit paket") + "</b>" + (idx == null ? "" : '<small class="muted pk-sub">' + e(p.nama) + "</small>") + '</div><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb">' +
+        '<div class="pk-s"><h4><i>1</i>Info paket</h4><label class="fld"><span>Nama paket <em class="req">*</em></span><input class="inp" name="nama" required maxlength="40" value="' + e(p.nama) + '" placeholder="Contoh: Pulse"></label>' +
+        '<div class="fld"><span>Kategori <em class="req">*</em></span><input class="inp" name="kat" required maxlength="30" value="' + e(p.kat) + '" placeholder="Pilih di bawah atau ketik kategori baru">' + (cats.length ? '<div class="catpick">' + cats.map(function (c) { return '<button type="button" class="cat-chip" data-cc="' + e(c) + '" aria-pressed="' + (c === p.kat) + '">' + e(c) + "</button>"; }).join("") + "</div>" : "") + "</div>" +
+        '<label class="fld"><span>Deskripsi singkat</span><input class="inp" name="ringkas" maxlength="90" value="' + e(p.ringkas) + '" placeholder="Satu kalimat yang menjelaskan paket ini"></label></div>' +
+        '<div class="pk-s"><h4><i>2</i>Harga</h4><label class="fld"><span>Harga (Rp) <em class="req">*</em></span><div class="money"><span>Rp</span><input class="inp" name="harga" type="number" inputmode="numeric" min="0" required value="' + (p.harga == null ? "" : p.harga) + '" placeholder="0"></div><small class="hint" id="hg-v">' + (p.harga == null ? "Tulis angka tanpa titik." : rp(p.harga) + (j ? " · sekali bayar" : " · per bulan")) + "</small></label></div>" +
+        '<div class="pk-s"><h4><i>3</i>Isi paket</h4><small class="hint">Satu fitur per baris. Tekan Enter untuk menambah baris baru.</small><div class="flist" id="fr-list">' + feats + '</div><button type="button" class="btn ghost sm" id="fr-add"><i class="bi bi-plus-lg"></i> Tambah baris</button></div>' +
+        (j ? '<div class="pk-s"><h4><i>4</i>Foto</h4><div class="upl"><input class="upl-in" type="file" accept="image/*" id="pf"><label class="upl-box" for="pf"><span class="upl-pv" id="fp">' + (foto ? '<img src="' + foto + '" alt="">' : '<i class="bi bi-image"></i>') + '</span><span class="upl-t"><b>Foto paket</b><small id="pf-name">' + (foto ? "Foto aktif. Klik atau seret gambar baru." : PF_TXT) + '</small></span><span class="btn sm upl-btn"><i class="bi bi-cloud-arrow-up"></i> Pilih foto</span></label><button type="button" class="btn ghost sm" id="pf-x"><i class="bi bi-trash3"></i> Hapus foto</button></div></div>' : "") +
+        '</div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button class="btn" type="submit"><i class="bi bi-check2"></i> Simpan paket</button></div></form>', function (m, close) {
+        var fl = $("#fr-list", m), kin = $('[name="kat"]', m), hin = $('[name="harga"]', m);
+        function addRow(v, focus) { var d = document.createElement("div"); d.innerHTML = fr(v); var r = d.firstChild; fl.appendChild(r); if (focus) $("input", r).focus(); }
+        $("#fr-add", m).addEventListener("click", function () { addRow("", true); });
+        fl.addEventListener("click", function (ev) { var x = ev.target.closest("[data-fx]"); if (!x) return; var r = x.closest(".frow"); if ($$(".frow", fl).length > 1) r.remove(); else $("input", r).value = ""; });
+        fl.addEventListener("keydown", function (ev) { if (ev.key === "Enter" && ev.target.matches("input")) { ev.preventDefault(); addRow("", true); } });
+        function syncCat() { $$(".cat-chip", m).forEach(function (c) { c.setAttribute("aria-pressed", c.dataset.cc === kin.value.trim()); }); }
+        $$(".cat-chip", m).forEach(function (c) { c.addEventListener("click", function () { kin.value = c.dataset.cc; syncCat(); }); });
+        kin.addEventListener("input", syncCat);
+        hin.addEventListener("input", function () { $("#hg-v", m).textContent = hin.value !== "" ? rp(hin.value) + (j ? " · sekali bayar" : " · per bulan") : "Tulis angka tanpa titik."; });
         var pf = $("#pf", m); if (pf) {
           var setF = function (file) { if (!file || file.type.indexOf("image/") !== 0) return toast("File harus berupa gambar"); shrink(file, 640, "image/jpeg", function (d) { foto = d; $("#fp", m).innerHTML = '<img src="' + d + '" alt="">'; $("#pf-name", m).textContent = file.name + " · " + Math.max(1, Math.round(file.size / 1024)) + " KB"; }); };
           pf.addEventListener("change", function () { if (pf.files[0]) setF(pf.files[0]); pf.value = ""; });
@@ -230,7 +279,7 @@
           $("#pf-x", m).addEventListener("click", function () { foto = ""; $("#fp", m).innerHTML = '<i class="bi bi-image"></i>'; $("#pf-name", m).textContent = PF_TXT; });
         }
         $("#f-pkt", m).addEventListener("submit", function (ev) {
-          ev.preventDefault(); var f = ev.target, it = { nama: f.nama.value.trim(), kat: f.kat.value.trim(), harga: Number(f.harga.value), ringkas: f.ringkas.value.trim(), fitur: f.fitur.value.split("\n").map(function (x) { return x.trim(); }).filter(Boolean) };
+          ev.preventDefault(); var f = ev.target, it = { nama: f.nama.value.trim(), kat: f.kat.value.trim(), harga: Number(f.harga.value), ringkas: f.ringkas.value.trim(), fitur: $$(".frow input", fl).map(function (x) { return x.value.trim(); }).filter(Boolean) };
           if (j && foto) it.foto = foto;
           var H2 = HG(), r = kind === "hosting" ? H2.hosting : H2.jasa[hs]; if (idx == null) r.push(it); else r[idx] = it;
           sv("nx-harga", H2); close(); toast("Paket tersimpan (demo, belum mengubah web asli)"); draw();
@@ -386,7 +435,7 @@
       guard({ title: "Kirim tagihan ke customer?", ok: "Kirim tagihan", html: srows([["Customer", uname(c.t)], ["Jenis", bill ? "Bill order" : "Hosting berkala"], ["Paket", c.t.paket], ["Siklus", bill ? "Sekali bayar" : BF.siklus]].concat(bill ? [["Keterangan", BF.ket.trim()]] : []).concat([["Total", rp(c.total)], ["Jatuh tempo", fdt(due)]])) + '<p class="muted">Setelah terkirim, tagihan tidak bisa diedit atau dihapus. Hanya bisa dibatalkan dengan alasan.</p>' }, function () {
         var all = BL(), n = all.reduce(function (m, b) { return Math.max(m, Number(b.id.slice(4)) || 0); }, 3000) + 1;
         all.unshift({ id: "INV-" + n, jenis: BF.jenis, ket: bill ? BF.ket.trim() : "", tk: c.t.id, user: c.t.user, item: c.t.paket, siklus: bill ? "Sekali bayar" : BF.siklus, dasar: c.dasar, adj: bill ? "none" : BF.adj, pct: c.pct, alasan: bill ? "" : (BF.alasan || "").trim(), total: c.total, jatuh: due, st: "Belum dibayar", dibuat: iso(t0()), by: me(), ts: Date.now(), ticket: "", log: [{ a: "Tagihan dibuat dan dikirim ke customer", by: me(), at: stamp() }] });
-        sv("nx-bill", all); bnew = false; toast("Tagihan INV-" + n + " terkirim ke " + uname(c.t)); draw();
+        sv("nx-bill", all); bnew = false; tkStat(c.t.id, "Menunggu pembayaran", "Tagihan INV-" + n + " dikirim · status: Menunggu pembayaran"); toast("Tagihan INV-" + n + " terkirim ke " + uname(c.t)); draw();
       });
     }
     function bUpd(id, st, aksi, r) {
@@ -394,7 +443,13 @@
         if (b.id !== id) return; b.st = st; b.log.push({ a: aksi + (r ? ": " + r : ""), by: me(), at: stamp() });
         if (b.ticket) { var tk = TK(); tk.forEach(function (x) { if (x.id === b.ticket) x.m.push({ w: "s", t: "Tagihan " + id + (st === "Lunas" ? " ditandai lunas" : " dibatalkan"), d: "Baru saja" }); }); sv("nx-tk", tk); }
       });
-      sv("nx-bill", all); toast("Tagihan " + id + ": " + st); draw();
+      var bb = all.filter(function (x) { return x.id === id; })[0], oth = bb && all.some(function (o) { return o.id !== id && o.tk === bb.tk && o.st === "Belum dibayar"; });
+      sv("nx-bill", all);
+      if (bb && !oth) {
+        if (st === "Lunas") tkStat(bb.tk, "Pembayaran Dikonfirmasi", "Pembayaran " + id + " dikonfirmasi admin");
+        else if (st === "Dibatalkan") { var tt = TK().filter(function (x) { return x.id === bb.tk; })[0]; if (tt && tt.st === "Menunggu pembayaran") tkStat(bb.tk, "Terhubung dengan admin", "Tagihan " + id + " dibatalkan"); }
+      }
+      toast("Tagihan " + id + ": " + st); draw();
     }
     function bDetail(id) {
       var b = BL().filter(function (x) { return x.id === id; })[0]; if (!b) return; var act = b.st === "Belum dibayar", hs = bj(b) === "hosting";
@@ -409,10 +464,13 @@
     }
     function bList() {
       var all = BL(), F = ["semua", "Belum dibayar", "Terlambat", "Lunas", "Dibatalkan"], ok = function (b, f) { return f === "semua" || bs(b) === f; };
-      var rows = all.filter(function (b) { return ok(b, bfil); }).map(function (b) { return "<tr><td>" + e(b.id) + "</td><td>" + e(bcust(b)) + "</td><td>" + e(b.item) + "</td><td>" + (bj(b) === "hosting" ? e(b.siklus) : "Bill order") + "</td><td>" + rp(b.total) + "</td><td>" + fdt(b.jatuh) + "</td><td>" + bd(bs(b)) + (b.lapor && b.st === "Belum dibayar" ? ' <span class="bd b2" title="Customer sudah konfirmasi bayar">Dikonfirmasi</span>' : "") + '</td><td class="act"><button class="ib" type="button" data-bx="det" data-v="' + e(b.id) + '" aria-label="Detail"><i class="bi bi-eye"></i></button></td></tr>'; }).join("");
+      var rows = all.filter(function (b) { return ok(b, bfil); }).map(function (b) {
+        var act = b.st === "Belum dibayar", hs2 = bj(b) === "hosting";
+        return '<tr><td class="bt-id"><b>' + e(b.id) + '</b></td><td class="bt-c"><span class="bt-cu">' + av(bcust(b)) + "<span>" + e(bcust(b)) + '</span></span></td><td class="bt-pk"><b>' + e(b.item) + "</b><small>" + (hs2 ? e(b.siklus) : "Bill order") + '</small></td><td class="bt-amt">' + rp(b.total) + '</td><td class="bt-due">' + fdt(b.jatuh) + (act ? "<small>" + rel(b) + "</small>" : "") + '</td><td class="bt-st">' + bd(bs(b)) + (b.lapor && act ? ' <span class="bd b2" title="Customer sudah konfirmasi bayar">Dikonfirmasi</span>' : "") + '</td><td class="act"><button class="btn ghost sm" type="button" data-bx="det" data-v="' + e(b.id) + '"><i class="bi bi-eye"></i> Detail</button></td></tr>';
+      }).join("");
       return '<div class="guard"><i class="bi bi-shield-check"></i><div><b>Pengaman tagihan aktif</b><small>Tagihan hanya dari order ticket, kirim wajib kode keamanan, log permanen, tidak bisa dihapus.</small></div></div>' +
         '<div class="tkhead bhead"><div class="chips mini bchips">' + F.map(function (f) { return '<button class="chip" type="button" data-bx="fil" data-v="' + f + '" aria-pressed="' + (bfil === f) + '">' + (f === "semua" ? "Semua" : f) + " <b>" + all.filter(function (b) { return ok(b, f); }).length + "</b></button>"; }).join("") + '</div><button class="btn" type="button" data-bx="new"><i class="bi bi-plus-circle"></i> Buat tagihan</button></div>' +
-        (rows ? table(["ID", "Customer", "Paket", "Jenis / siklus", "Total", "Jatuh tempo", "Status", "Aksi"], rows) : '<div class="dcard empty"><i class="bi bi-cash-stack"></i><b>Tidak ada tagihan</b><p class="muted">Tagihan yang kamu buat akan muncul di sini.</p></div>');
+        (rows ? table(["ID", "Customer", "Paket", "Total", "Jatuh tempo", "Status", "Aksi"], rows, "bt") : '<div class="dcard empty"><i class="bi bi-cash-stack"></i><b>Tidak ada tagihan</b><p class="muted">Tagihan yang kamu buat akan muncul di sini.</p></div>');
     }
     function cBills() {
       var a = BL().filter(bmine), act = a.filter(function (b) { return b.st === "Belum dibayar"; }).sort(function (x, y) { return x.jatuh < y.jatuh ? -1 : 1; }), his = a.filter(function (b) { return b.st !== "Belum dibayar"; });
@@ -426,15 +484,15 @@
             (b.adj !== "none" ? '<p class="bill-n">Termasuk ' + (b.adj === "diskon" ? "diskon " : "biaya tambahan ") + b.pct + "%: " + e(b.alasan) + "</p>" : "") +
             (!hs && b.lapor ? '<p class="bill-n ok"><i class="bi bi-hourglass-split"></i> Konfirmasi pembayaran sudah dikirim, menunggu dicek admin.</p>' : "") + '<p class="bill-n"><i class="bi bi-info-circle"></i> ' + (hs ? "Pembayaran hosting dilakukan lewat ticket." : "Bayar lewat transfer ke rekening atau e-wallet NEXORA.") + '</p><div class="bill-a"><button class="btn" type="button" data-bx="pay" data-v="' + e(b.id) + '"><i class="bi bi-credit-card"></i> Bayar sekarang</button>' + (tkid ? '<button class="btn ghost" type="button" data-bx="tk" data-v="' + e(tkid) + '"><i class="bi bi-chat-dots"></i> Lihat ticket ' + e(tkid) + "</button>" : "") + "</div></div>";
         }).join("") || '<div class="dcard empty"><i class="bi bi-check-circle"></i><b>Tidak ada tagihan</b><p class="muted">Semua tagihanmu sudah beres.</p></div>') +
-        (his.length ? "<h2>Riwayat tagihan</h2><div class=\"lis\">" + his.map(function (b) { return '<div class="li"><span><b>' + e(b.item) + "</b><small>" + e(b.id) + " · " + rp(b.total) + " · " + fdt(b.jatuh) + "</small></span>" + bd(b.st) + "</div>"; }).join("") + "</div>" : "");
+        (his.length ? '<div class="bh-head"><h2>Riwayat tagihan</h2><span class="muted">' + his.length + " tagihan</span></div><div class=\"bh-list\">" + his.map(function (b) { var okb = b.st === "Lunas"; return '<div class="bh ' + (okb ? "ok" : "x") + '"><span class="bh-i ' + (okb ? "ok" : "x") + '"><i class="bi bi-' + (okb ? "check2-circle" : "x-circle") + '"></i></span><div class="bh-t"><b>' + e(b.item) + "</b><small>" + e(b.id) + " · " + (bj(b) === "hosting" ? e(b.siklus) : "Bill order") + "</small><small>Jatuh tempo " + fdt(b.jatuh) + '</small></div><div class="bh-r"><strong>' + rp(b.total) + "</strong>" + bd(b.st) + "</div></div>"; }).join("") + "</div>" : "");
     }
     function bPay(id, sudah) {
       var b = BL().filter(function (x) { return x.id === id; })[0]; if (!b) return;
-      var all = TK(), ex = all.filter(function (x) { return x.id === b.ticket && x.st !== "Selesai"; })[0];
+      var all = TK(), ex = all.filter(function (x) { return x.id === b.ticket && !cl(x); })[0];
       var msg = sudah ? "Halo, saya sudah transfer untuk tagihan " + b.id + " (" + b.item + ", " + rp(b.total) + "). Berikut bukti transfernya, mohon dicek." : "Halo, saya ingin membayar tagihan " + b.id + " (" + b.item + ", " + rp(b.total) + ", jatuh tempo " + fdt(b.jatuh) + "). Mohon info cara pembayarannya.";
       if (!ex) {
         var n = all.reduce(function (m, x) { return Math.max(m, Number(x.id.slice(2)) || 0); }, 1043) + 1, tid = "T-" + n;
-        all.unshift({ id: tid, subj: (sudah ? "Konfirmasi bayar " : "Bayar ") + b.id + " · " + b.item, kat: "Pembayaran", paket: b.item, st: "Terbuka", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: msg, d: "Baru saja" }] }); sv("nx-tk", all);
+        all.unshift({ id: tid, subj: (sudah ? "Konfirmasi bayar " : "Bayar ") + b.id + " · " + b.item, kat: "Pembayaran", paket: b.item, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: msg, d: "Baru saja" }] }); sv("nx-tk", all);
         var bl = BL(); bl.forEach(function (x) { if (x.id === id) { x.ticket = tid; x.log.push({ a: "Customer membuka ticket pembayaran " + tid, by: me(), at: stamp() }); } }); sv("nx-bill", bl);
         ex = { id: tid }; toast("Ticket " + tid + " dibuat untuk pembayaran " + b.id);
       } else if (sudah) { all.forEach(function (x) { if (x.id === ex.id) x.m.push({ w: "c", t: msg, d: "Baru saja" }); }); sv("nx-tk", all); }
@@ -442,7 +500,7 @@
     }
     function bPaid(id) {
       var bl = BL(), b = bl.filter(function (x) { return x.id === id; })[0]; if (!b) return;
-      var all = TK(), ot = all.filter(function (x) { return x.id === b.tk && x.st !== "Selesai"; })[0];
+      var all = TK(), ot = all.filter(function (x) { return x.id === b.tk && !cl(x); })[0];
       if (!b.lapor) {
         b.lapor = stamp(); (b.log = b.log || []).push({ a: "Customer mengonfirmasi sudah membayar", by: me(), at: stamp() }); sv("nx-bill", bl);
         if (ot) { ot.m.push({ w: "c", t: "Halo, saya sudah transfer untuk tagihan " + b.id + " (" + b.item + ", " + rp(b.total) + "). Berikut bukti transfernya, mohon dicek.", d: "Baru saja" }); sv("nx-tk", all); }
@@ -455,7 +513,7 @@
       var b = BL().filter(function (x) { return x.id === id; })[0]; if (!b) return;
       if (bj(b) === "hosting") return bPay(id, false);
       var ac = BYR().filter(function (x) { return x.aktif !== false; }),
-        ot = TK().filter(function (x) { return x.id === b.tk && x.st !== "Selesai"; })[0],
+        ot = TK().filter(function (x) { return x.id === b.tk && !cl(x); })[0],
         cp = function (v, m, l) { return '<button class="pm-cp" type="button" data-cp="' + e(v) + '" data-msg="' + e(m) + '"><i class="bi bi-copy"></i> ' + l + "</button>"; };
       modal('<div class="mbox pm"><div class="mh pm-h"><span class="pm-ic"><i class="bi bi-wallet2"></i></span><div><b>Pembayaran</b><small>Bill order · ' + e(b.id) + '</small></div><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb">' +
         '<div class="pm-total"><small>Total yang harus ditransfer</small><div class="pm-amt"><b>' + rp(b.total) + "</b>" + cp(String(b.total), "Nominal disalin", "Salin nominal") + '</div><div class="pm-meta"><span><i class="bi bi-box2"></i> ' + e(b.item) + '</span><span><i class="bi bi-calendar-event"></i> Jatuh tempo ' + fdt(b.jatuh) + "</span>" + (b.ket ? '<span><i class="bi bi-card-text"></i> ' + e(b.ket) + "</span>" : "") + "</div></div>" +
@@ -494,16 +552,16 @@
     function edList(k) {
       var isK = k === "k", a = isK ? KON() : BYR();
       return '<div class="tkhead"><span class="muted">' + a.length + (isK ? " kontak · tampil di halaman Hubungi kami" : " rekening / e-wallet · tampil ke customer saat bayar bill order") + '</span><button class="btn" type="button" data-ed="' + k + 'new"><i class="bi bi-plus-circle"></i> Tambah ' + (isK ? "kontak" : "rekening") + '</button></div><div class="klist">' +
-        a.map(function (x, i) {
-          var ic = isK ? ktf(x.tipe)[2] : (x.jenis === "Bank" ? "bank" : "wallet2");
-          return '<div class="kr' + (x.aktif === false ? " off" : "") + '"><span class="kr-i"><i class="bi bi-' + ic + '"></i></span><div class="kr-t"><b>' + e(isK ? x.label : x.jenis + " · " + x.nama) + "</b><small>" + e(isK ? x.nilai : x.no + " · a.n. " + x.an) + '</small></div><button class="sws" type="button" role="switch" aria-checked="' + (x.aktif !== false) + '" aria-label="Tampilkan" data-ed="' + k + 'tgl" data-i="' + i + '"></button><button class="ib" type="button" data-ed="' + k + 'edit" data-i="' + i + '" aria-label="Edit"><i class="bi bi-pencil"></i></button><button class="ib" type="button" data-ed="' + k + 'del" data-i="' + i + '" aria-label="Hapus"><i class="bi bi-trash"></i></button></div>';
-        }).join("") + '</div><p class="muted kr-n">Demo: perubahan tersimpan di browser ini dan belum mengubah web asli.</p>';
+        (a.map(function (x, i) {
+          var ic = isK ? ktf(x.tipe)[2] : (x.jenis === "Bank" ? "bank" : "wallet2"), on = x.aktif !== false;
+          return '<div class="kr' + (on ? "" : " off") + '"><span class="kr-i"><i class="bi bi-' + ic + '"></i></span><div class="kr-t"><b>' + e(isK ? x.label : x.jenis + " · " + x.nama) + "</b><small>" + e(isK ? x.nilai : x.no + " · a.n. " + x.an) + '</small></div><div class="kr-ac"><button class="swt" type="button" role="switch" aria-checked="' + on + '" aria-label="Tampilkan" data-ed="' + k + 'tgl" data-i="' + i + '"></button><em class="kr-lb">' + (on ? "Ditampilkan" : "Disembunyikan") + '</em><span class="kr-sp"></span><button class="ib" type="button" data-ed="' + k + 'edit" data-i="' + i + '" aria-label="Edit"><i class="bi bi-pencil"></i></button><button class="ib dn" type="button" data-ed="' + k + 'del" data-i="' + i + '" aria-label="Hapus"><i class="bi bi-trash"></i></button></div></div>';
+        }).join("") || '<div class="dcard empty"><i class="bi bi-' + (isK ? "telephone" : "bank") + '"></i><b>Belum ada ' + (isK ? "kontak" : "rekening") + "</b></div>") + '</div><p class="muted kr-n">Demo: perubahan tersimpan di browser ini dan belum mengubah web asli.</p>';
     }
     function edModal(k, i) {
       var isK = k === "k", a = isK ? KON() : BYR(), cur = i >= 0 ? a[i] : null, tip = cur ? (isK ? cur.tipe : cur.jenis) : (isK ? "email" : "Bank");
-      var opts = isK ? KT.map(function (x) { return [x[0], x[1]]; }) : [["Bank", "Bank"], ["E-wallet", "E-wallet"]];
+      var opts = isK ? KT.map(function (x) { return [x[0], x[1], x[2]]; }) : [["Bank", "Bank", "bank"], ["E-wallet", "E-wallet", "wallet2"]];
       var f = isK ? [["Label", cur ? cur.label : "", "Contoh: Email support"], ["Nilai (email / nomor / link)", cur ? cur.nilai : "", ktf(tip)[3]], ["Keterangan (opsional)", cur ? cur.ket || "" : "", "Tampil di bawah kontak"]] : [["Nama bank / e-wallet", cur ? cur.nama : "", "Contoh: BCA atau DANA"], ["Nomor rekening / HP", cur ? cur.no : "", "Nomor tujuan transfer"], ["Atas nama", cur ? cur.an : "", "Nama pemilik rekening"]];
-      modal('<div class="mbox sm"><div class="mh"><b>' + (cur ? "Edit " : "Tambah ") + (isK ? "kontak" : "rekening / e-wallet") + '</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><div class="fld"><span>Jenis</span><div class="seg2 full seg-w" id="ed-t">' + opts.map(function (o) { return '<button type="button" data-v="' + o[0] + '" aria-pressed="' + (o[0] === tip) + '">' + o[1] + "</button>"; }).join("") + "</div></div>" +
+      modal('<div class="mbox sm pk"><div class="mh"><b>' + (cur ? "Edit " : "Tambah ") + (isK ? "kontak" : "rekening / e-wallet") + '</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><div class="fld"><span>Jenis</span><div class="tipe" id="ed-t" role="group">' + opts.map(function (o) { return '<button type="button" class="tp" data-v="' + o[0] + '" aria-pressed="' + (o[0] === tip) + '"><i class="bi bi-' + o[2] + '"></i><span>' + o[1] + "</span></button>"; }).join("") + "</div></div>" +
         f.map(function (x, n) { return '<label class="fld"><span>' + x[0] + '</span><input class="inp" id="ed-' + "abc".charAt(n) + '" maxlength="120" value="' + e(x[1]) + '" placeholder="' + e(x[2]) + '"></label>'; }).join("") + '<p class="err" id="ed-e" hidden></p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn" data-ok>Simpan</button></div></div>', function (m, close) {
         var T = tip;
         $$("#ed-t button", m).forEach(function (b) { b.addEventListener("click", function () { T = b.dataset.v; $$("#ed-t button", m).forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); if (isK) $("#ed-b", m).placeholder = ktf(T)[3]; }); });
@@ -533,19 +591,29 @@
       a: { ringkasan: ["Dashboard", "Kondisi ticket dan pesanan saat ini."], tiket: ["Ticket", "Lihat, balas, dan ubah status ticket customer."], tagihan: ["Tagihan", "Buat dan pantau tagihan customer dengan pengaman."], kontak: ["Kontak", "Atur kontak yang tampil di halaman Hubungi kami."], bayar: ["Pembayaran", "Rekening dan e-wallet untuk pembayaran bill order."], jasa: ["Jasa setup", "Kelola paket setup Minecraft dan Discord."], hosting: ["Hosting", "Kelola paket hosting."], tampilan: ["Logo & tampilan", "Atur logo, warna, dan teks website."], ekspor: ["Ekspor data", "Unduh cadangan ticket dan pesanan."] } };
     var PAN = {
       ringkasan: function () {
-        var a = adm ? TK() : mine(), n = a.filter(function (x) { return x.st !== "Selesai"; }).length, el = $("#p-ringkasan");
+        var a = adm ? TK() : mine(), n = a.filter(function (x) { return !cl(x); }).length, el = $("#p-ringkasan");
         if (adm) {
-          var all = TK(), act = all.filter(function (x) { return x.st !== "Selesai"; }), need = act.filter(function (x) { return last(x).w === "c"; }), cn = function (s) { return all.filter(function (x) { return x.st === s; }).length; };
-          var H = HG(), np = H.hosting.length + H.jasa.minecraft.length + H.jasa.discord.length, mx = Math.max(1, cn("Terbuka"), cn("Diproses"), cn("Menunggu pembayaran"), cn("Selesai"));
-          el.innerHTML = '<div class="hero-c"><div><b>Selamat datang, ' + e(me()) + "</b><p>" + (need.length ? need.length + " ticket menunggu balasanmu." : "Semua ticket sudah ditanggapi.") + '</p></div><div class="hc-a"><button class="btn" data-tab="tiket"><i class="bi bi-chat-dots"></i> Buka ticket</button><button class="btn ghost" data-tab="jasa"><i class="bi bi-tags"></i> Kelola harga</button></div></div>' +
-            '<div class="dstats">' + stat("Ticket terbuka", cn("Terbuka")) + stat("Sedang diproses", cn("Diproses")) + stat("Menunggu pembayaran", cn("Menunggu pembayaran")) + stat("Total pesanan", OR().length) + stat("Tagihan aktif", BL().filter(function (b) { return b.st === "Belum dibayar"; }).length) + '</div><div class="cols2"><div><h2>Perlu dibalas</h2><div class="lis">' +
-            (need.map(function (x) { return '<button class="li" data-gt="' + x.id + '"><span><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(uname(x)) + "</small></span>" + bd(x.st) + "</button>"; }).join("") || '<p class="muted">Tidak ada ticket yang menunggu.</p>') +
-            '</div></div><div><h2>Status ticket</h2><div class="dcard bars">' + [["Terbuka", "b1"], ["Diproses", "b2"], ["Menunggu pembayaran", "b3"], ["Selesai", "b4"]].map(function (s) { return '<div class="bar"><span>' + s[0] + '</span><div><i class="' + s[1] + '" style="width:' + Math.round(cn(s[0]) / mx * 100) + '%"></i></div><b>' + cn(s[0]) + "</b></div>"; }).join("") + '</div><p class="muted" style="margin-top:10px">' + np + " paket aktif di daftar harga.</p></div></div>"; return;
+          var all = TK(), act = all.filter(function (x) { return !cl(x); }), need = act.filter(function (x) { return last(x).w === "c"; }), bl = BL(), cn = function (st) { return act.filter(function (x) { return x.st === st; }).length; };
+          var unpaid = bl.filter(function (b) { return b.st === "Belum dibayar"; }), late = unpaid.filter(function (b) { return dleft(b.jatuh) < 0; }), tot = unpaid.reduce(function (z, b) { return z + Number(b.total || 0); }, 0);
+          var H = HG(), np = H.hosting.length + H.jasa.minecraft.length + H.jasa.discord.length;
+          var jm = new Date().getHours(), sl = jm < 11 ? "pagi" : jm < 15 ? "siang" : jm < 18 ? "sore" : "malam", hr = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+          var SG = [["Menunggu admin balas", "#d9a000"], ["Terhubung dengan admin", "#3b7ddd"], ["Menunggu pembayaran", "#c43d85"], ["Pembayaran Dikonfirmasi", "#0ea5a4"], ["Pesanan Diproses", "#8b5cf6"], ["Orderan Selesai", "#2a9a56"]], acc = 0, stops = [];
+          SG.forEach(function (g) { var p = act.length ? cn(g[0]) / act.length * 100 : 0; if (p) { stops.push(g[1] + " " + acc.toFixed(2) + "% " + (acc + p).toFixed(2) + "%"); acc += p; } });
+          var dn = stops.length ? "conic-gradient(" + stops.join(",") + ")" : "conic-gradient(var(--line) 0 100%)";
+          var sx = function (ic, lb, v, tn, tb, sub) { return '<button type="button" class="dstat sx ' + tn + '" data-tab="' + tb + '"><span class="si"><i class="bi bi-' + ic + '"></i></span><div><small>' + lb + "</small><b>" + v + "</b>" + (sub ? "<em>" + sub + "</em>" : "") + "</div></button>"; };
+          var needH = need.slice(0, 5).map(function (x) { return '<button class="li ln" data-gt="' + x.id + '">' + av(uname(x)) + '<span><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(uname(x)) + " · " + e(last(x).d) + "</small></span>" + bd(x.st, 1) + "</button>"; }).join("") || '<div class="dcard empty sm0"><i class="bi bi-check2-circle"></i><b>Semua sudah dibalas</b><p class="muted">Tidak ada ticket yang menunggu balasanmu.</p></div>';
+          var billH = unpaid.slice().sort(function (x, y) { return x.jatuh < y.jatuh ? -1 : 1; }).slice(0, 4).map(function (b) { var lt = dleft(b.jatuh) < 0; return '<button class="li ln' + (lt ? " late" : "") + '" data-tab="tagihan"><span class="bh-i ' + (lt ? "x" : "w") + '"><i class="bi bi-' + (lt ? "exclamation-triangle" : "hourglass-split") + '"></i></span><span><b>' + e(b.item) + " · " + rp(b.total) + "</b><small>" + e(b.id) + " · " + e(bcust(b)) + " · " + rel(b) + "</small></span>" + bd(bs(b)) + "</button>"; }).join("") || '<div class="dcard empty sm0"><i class="bi bi-cash-stack"></i><b>Tidak ada tagihan aktif</b><p class="muted">Tagihan yang belum dibayar muncul di sini.</p></div>';
+          var legend = SG.map(function (g) { return '<li><i style="background:' + g[1] + '"></i><span>' + (SHORT[g[0]] || g[0]) + "</span><b>" + cn(g[0]) + "</b></li>"; }).join("");
+          var QK = [["receipt", "Buat tagihan", "tagihan"], ["tags", "Jasa setup", "jasa"], ["hdd-stack", "Hosting", "hosting"], ["telephone", "Kontak", "kontak"]].map(function (q) { return '<button type="button" class="qk" data-tab="' + q[2] + '"><i class="bi bi-' + q[0] + '"></i><span>' + q[1] + "</span></button>"; }).join("");
+          el.innerHTML = '<div class="hero-c adm-hero"><div><small class="hero-d">' + e(hr) + "</small><b>Selamat " + sl + ", " + e(me()) + "</b><p>" + (need.length ? need.length + " ticket menunggu balasanmu." : "Semua ticket sudah ditanggapi.") + (late.length ? " " + late.length + " tagihan terlambat." : "") + '</p></div><div class="hc-a"><button class="btn" data-tab="tiket"><i class="bi bi-chat-dots"></i> Buka ticket</button><button class="btn ghost" data-tab="tagihan"><i class="bi bi-receipt"></i> Tagihan</button></div></div>' +
+            '<div class="dstats sx-g">' + sx("chat-left-dots", "Perlu dibalas", need.length, "t1", "tiket") + sx("chat-dots", "Ticket aktif", act.length, "t2", "tiket") + sx("hourglass-split", "Menunggu pembayaran", cn("Menunggu pembayaran"), "t3", "tiket") + sx("lightning-charge", "Pesanan diproses", cn("Pesanan Diproses"), "t5", "tiket") + sx("cash-stack", "Tagihan aktif", unpaid.length, "t4", "tagihan", rp(tot)) + sx("exclamation-triangle", "Terlambat", late.length, "t6", "tagihan") + "</div>" +
+            '<div class="cols2 adm-cols"><div><div class="sec-h"><h2>Perlu dibalas</h2><button type="button" class="lnk" data-tab="tiket">Lihat semua <i class="bi bi-arrow-right"></i></button></div><div class="lis">' + needH + '</div><div class="sec-h"><h2>Tagihan perlu perhatian</h2><button type="button" class="lnk" data-tab="tagihan">Lihat semua <i class="bi bi-arrow-right"></i></button></div><div class="lis">' + billH + "</div></div>" +
+            '<div><div class="sec-h"><h2>Status ticket aktif</h2></div><div class="dcard dn-card"><div class="donut" style="--dn:' + dn + '"><div><b>' + act.length + "</b><small>aktif</small></div></div><ul class=\"dn-lg\">" + legend + '</ul></div><div class="sec-h"><h2>Pintasan</h2></div><div class="qk-g">' + QK + '</div><p class="muted" style="margin-top:12px">' + np + " paket aktif di daftar harga.</p></div></div>"; return;
         }
         var jam = new Date().getHours(), sal = jam < 11 ? "pagi" : jam < 15 ? "siang" : jam < 18 ? "sore" : "malam";
         var hari = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" });
         var tg2 = BL().filter(function (b) { return bmine(b) && b.st === "Belum dibayar"; }), tot = tg2.reduce(function (z, b) { return z + Number(b.total || 0); }, 0);
-        var aktif = a.filter(function (x) { return x.st !== "Selesai"; }), bayar = a.filter(function (x) { return x.st === "Menunggu pembayaran"; }), ls = ctab === "bayar" ? bayar : aktif;
+        var aktif = a.filter(function (x) { return !cl(x); }), bayar = a.filter(function (x) { return x.st === "Menunggu pembayaran"; }), ls = ctab === "bayar" ? bayar : aktif;
         var HL = [["book", "Pertanyaan umum", "faq.html"], ["discord", "Discord NEXORA", "https://discord.gg/7bFYCRheRm"], ["file-earmark-text", "Syarat dan ketentuan", "terms.html"], ["shield-check", "Kebijakan privasi", "privacy.html"]];
         el.innerHTML = '<p class="dt-date">' + e(hari) + '</p><div class="cdash"><div class="cmain"><section class="cg"><h2>Selamat ' + sal + ", " + e(me()) + '</h2><p class="cg-note">Ceritakan kebutuhan servermu saat memesan. Makin jelas, makin cepat tim NEXORA memberi harga.</p><div class="cg-a"><button class="cg-b" data-go="buka"><i class="bi bi-shop"></i> Pesan jasa</button><a class="cg-b" href="https://discord.gg/7bFYCRheRm" target="_blank" rel="noopener"><i class="bi bi-question-circle"></i> Tanya admin</a><button class="cg-b" data-go="tagihan"><i class="bi bi-receipt"></i> Tagihan</button></div></section>' +
           '<section class="cc"><header class="cc-h"><i class="bi bi-chat-dots"></i><b>Pesananmu</b></header><div class="cc-seg"><button type="button" data-ct="aktif" aria-pressed="' + (ctab !== "bayar") + '">Ticket aktif <em>' + aktif.length + '</em></button><button type="button" data-ct="bayar" aria-pressed="' + (ctab === "bayar") + '">Menunggu bayar <em>' + bayar.length + '</em></button></div><div class="cc-b">' +
@@ -584,17 +652,24 @@
     function draw() {
       $$(".stab[data-tab]", root).forEach(function (b) { b.setAttribute("aria-selected", b.dataset.tab === tab); });
       $$(".dpanel", root).forEach(function (p) { p.hidden = p.id !== "p-" + tab; });
+      var pn = $("#p-" + tab), sx = (lastTab === tab && pn) ? $$(".chips,.bchips,.tkpills", pn).map(function (el) { return el.scrollLeft; }) : null;
       PAN[tab]();
+      if (pn) $$(".chips,.bchips,.tkpills", pn).forEach(function (el, i) {
+        if (sx && sx[i] != null) el.scrollLeft = sx[i];
+        var on = $('[aria-pressed="true"],[aria-current="true"]', el);
+        if (on) { var l = on.offsetLeft - el.offsetLeft; if (l < el.scrollLeft) el.scrollLeft = Math.max(0, l - 12); else if (l + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = l + on.offsetWidth - el.clientWidth + 12; }
+      });
+      lastTab = tab;
       var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1];
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight;
       root.classList.toggle("chatv", !!sel && (tab === "tiket" ? (adm ? tv === "chat" : true) : (tab === "riwayat" && !adm && tv === "chat")));
-      var ct = $("#c-tiket"); if (ct) { var cc = (adm ? TK().filter(function (x) { return x.st === "Terbuka"; }) : mine().filter(function (x) { return x.st !== "Selesai"; })).length; ct.textContent = cc; ct.hidden = !cc; }
+      var ct = $("#c-tiket"); if (ct) { var cc = (adm ? TK().filter(function (x) { return x.st === "Menunggu admin balas" && !cl(x); }) : mine().filter(function (x) { return !cl(x); })).length; ct.textContent = cc; ct.hidden = !cc; }
       var cb = $("#c-tagihan"); if (cb) { var nb = BL().filter(function (b) { return b.st === "Belum dibayar" && (adm ? dleft(b.jatuh) < 0 : bmine(b)); }).length; cb.textContent = nb; cb.hidden = !nb; }
       mk();
     }
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-tab],[data-go],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-af],[data-of],[data-back],[data-close],[data-hs],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,#lg-x,#qr-x,.sw,.dd-btn,.dd-opt,[data-bx],[data-ed]"); if (!t) return;
+      var t = ev.target.closest("[data-tab],[data-go],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-af],[data-of],[data-back],[data-close],[data-hs],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,#lg-x,#qr-x,.sw,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc]"); if (!t) return;
       var d = t.dataset;
       if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
       if (t.classList.contains("dd-opt")) { var dd = t.closest(".dd"); ddClose(); if (dd.hasAttribute("data-bdd")) return bdd(dd.id, d.v); $("#f-buka").paket.value = d.v; return bukaSync(); }
@@ -603,16 +678,17 @@
       if (t.id === "logout") return outAsk();
       if (t.id === "side-t") return setWide();
       if (d.ct) { ctab = d.ct; return draw(); }
-      if (d.tab || d.go) { tab = d.tab || d.go; setOpen(false); return draw(); }
-      if (d.gt) { var x = TK().filter(function (y) { return y.id === d.gt; })[0]; sel = d.gt; tg = x.st === "Selesai" ? "selesai" : "aktif"; tv = "chat"; tab = (!adm && x.st === "Selesai") ? "riwayat" : "tiket"; return draw(); }
+      if (d.tab || d.go) { var nt = d.tab || d.go; if (!adm && nt === "buka" && actCount() >= MAXT) { setOpen(false); return limitModal(); } tab = nt; setOpen(false); return draw(); }
+      if (d.hc !== undefined) { hcat[tab] = d.hc; return draw(); }
+      if (d.gt) { var x = TK().filter(function (y) { return y.id === d.gt; })[0]; sel = d.gt; tg = cl(x) ? "selesai" : "aktif"; tv = "chat"; tab = (!adm && cl(x)) ? "riwayat" : "tiket"; return draw(); }
       if (d.svc) { bsv = d.svc; $$("[data-svc]", root).forEach(function (b) { b.setAttribute("aria-pressed", b === t); }); $("#f-buka").paket.dataset.l = ""; return bukaSync(); }
       if (d.tg) { tg = d.tg; sel = null; return draw(); }
       if (t.classList.contains("tk-item") || t.classList.contains("tk-pill")) { sel = d.id; tv = "chat"; return draw(); }
       if (d.back !== undefined) { tv = "list"; return draw(); }
       if (d.af) { af = d.af; return draw(); }
       if (d.of) { of = d.of; return draw(); }
-      if (d.hs) { hs = d.hs; return draw(); }
-      if (d.close !== undefined) return modal('<div class="mbox sm"><div class="mh"><b>Tutup ticket?</b></div><div class="mb"><p>Apakah kamu yakin ingin menutup ticket ini?</p><p class="muted">Setelah ditutup, customer dan admin tidak bisa mengirim pesan lagi dan ticket masuk ke Riwayat.</p></div><div class="mf"><button class="btn ghost" data-x>Batal</button><button class="btn dng" data-ok>Ya, tutup ticket</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { var a = TK(); a.forEach(function (y) { if (y.id === sel) { y.st = "Selesai"; y.m.push({ w: "s", t: "Ticket ditutup oleh admin", d: "Baru saja" }); } }); sv("nx-tk", a); close(); toast("Ticket ditutup dan dipindah ke Riwayat"); af = "Riwayat"; draw(); }); });
+      if (d.hs) { hs = d.hs; hcat.jasa = "semua"; return draw(); }
+      if (d.close !== undefined) return modal('<div class="mbox sm"><div class="mh"><b>Tutup ticket?</b></div><div class="mb"><p>Apakah kamu yakin ingin menutup ticket ini?</p><p class="muted">Setelah ditutup, customer dan admin tidak bisa mengirim pesan lagi dan ticket masuk ke Riwayat.</p></div><div class="mf"><button class="btn ghost" data-x>Batal</button><button class="btn dng" data-ok>Ya, tutup ticket</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { var a = TK(); a.forEach(function (y) { if (y.id === sel) { y.closed = true; y.m.push({ w: "s", t: "Ticket ditutup oleh admin", d: "Baru saja" }); } }); sv("nx-tk", a); close(); toast("Ticket ditutup dan dipindah ke Riwayat"); af = "Riwayat"; draw(); }); });
       if (d.add !== undefined) return formPaket(tab, null);
       if (d.edit !== undefined) return formPaket(tab, Number(d.edit));
       if (d.del !== undefined) { var H = HG(), r = tab === "hosting" ? H.hosting : H.jasa[hs], i = Number(d.del); return modal('<div class="mbox sm"><div class="mh"><b>Hapus paket?</b></div><div class="mb"><p class="muted">Paket "' + e(r[i].nama) + '" akan dihapus dari daftar.</p></div><div class="mf"><button class="btn ghost" data-x>Batal</button><button class="btn dng" data-ok>Hapus</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { r.splice(i, 1); sv("nx-harga", H); close(); toast("Paket dihapus"); draw(); }); }); }
@@ -643,7 +719,7 @@
     root.addEventListener("change", function (ev) {
       var t = ev.target;
       if (t.closest("#f-buka")) bukaSync();
-      if (t.matches("[data-st]")) { var a = TK(); a.forEach(function (x) { if (x.id === sel) x.st = t.value; }); sv("nx-tk", a); toast("Status diperbarui"); draw(); }
+      if (t.matches("[data-st]")) { var a = TK(); a.forEach(function (x) { if (x.id === sel && x.st !== t.value) { x.st = t.value; x.m.push({ w: "s", t: "Status diubah: " + t.value, d: "Baru saja" }); syncOrd(x); } }); sv("nx-tk", a); toast("Status diperbarui"); draw(); }
       if (t.id === "lg" && t.files[0]) { setLogo(t.files[0]); t.value = ""; }
       if (t.id === "qr" && t.files[0]) { setQR(t.files[0]); t.value = ""; }
     });
@@ -654,16 +730,17 @@
       ev.preventDefault(); var f = ev.target;
       if (f.matches("[data-rep]")) {
         var txt = $("textarea", f).value.trim(); if (!txt) return; var a = TK(), cur = a.filter(function (x) { return x.id === sel; })[0];
-        if (!cur || cur.st === "Selesai") { toast("Ticket sudah ditutup, chat tidak bisa dikirim"); return draw(); }
-        cur.m.push({ w: adm ? "a" : "c", t: txt, d: "Baru saja" }); if (adm && cur.st === "Terbuka") cur.st = "Diproses"; sv("nx-tk", a); draw();
-        if (!adm) { var tid = sel; setTimeout(function () { var b = TK(); b.forEach(function (x) { if (x.id === tid && x.st !== "Selesai" && last(x).w === "c") x.m.push({ w: "a", t: "Terima kasih, pesanmu sudah kami terima. Tim NEXORA akan segera membalas. (balasan otomatis demo)", d: "Baru saja" }); }); sv("nx-tk", b); remote(); }, 3500); }
+        if (!cur || cl(cur)) { toast("Ticket sudah ditutup, chat tidak bisa dikirim"); return draw(); }
+        cur.m.push({ w: adm ? "a" : "c", t: txt, d: "Baru saja" }); if (adm && cur.st === "Menunggu admin balas") cur.st = "Terhubung dengan admin"; sv("nx-tk", a); draw();
+        if (!adm) { var tid = sel; setTimeout(function () { var b = TK(); b.forEach(function (x) { if (x.id === tid && !cl(x) && last(x).w === "c") x.m.push({ w: "a", t: "Terima kasih, pesanmu sudah kami terima. Tim NEXORA akan segera membalas. (balasan otomatis demo)", d: "Baru saja" }); }); sv("nx-tk", b); remote(); }, 3500); }
         return;
       }
       if (f.id === "f-prof") { ss("nx-name", f.nama.value.trim()); sv("nx-prof", { discord: f.dc.value.trim() }); $("#who").textContent = me(); toast("Profil tersimpan"); return draw(); }
       if (f.id === "f-buka") {
+        if (actCount() >= MAXT) return limitModal();
         var b = TK(), id = "T-" + (1044 + b.length), k = f.kat.value, p = k === "Order baru" ? f.paket.value : "-";
-        b.unshift({ id: id, subj: f.subj.value || ("Order " + p), kat: k, paket: p, st: "Terbuka", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: f.msg.value, d: "Baru saja" }] }); sv("nx-tk", b);
-        if (k === "Order baru") { var o = OR(); o.unshift({ id: "ORD-" + (2045 + o.length), item: p, jenis: "Order via ticket", tgl: "Hari ini", st: "Menunggu" }); sv("nx-or", o); }
+        b.unshift({ id: id, subj: f.subj.value || ("Order " + p), kat: k, paket: p, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: f.msg.value, d: "Baru saja" }] }); sv("nx-tk", b);
+        if (k === "Order baru") { var o = OR(); o.unshift({ id: "ORD-" + (2045 + o.length), tk: id, item: p, jenis: "Order via ticket", tgl: "Hari ini", st: "Menunggu" }); sv("nx-or", o); }
         sel = id; tg = "aktif"; tab = "tiket"; draw(); toast("Ticket " + id + " dibuat. Nanti notifikasi otomatis masuk ke Discord NEXORA.");
       }
     });

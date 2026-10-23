@@ -761,7 +761,18 @@ function pasangKontakPage() {
 }
 
 /* ===== Daftar isi halaman legal: tandai bagian yang sedang dibaca ===== */
+function pasangProgress() {
+  const bar = document.querySelector(".legal-page"), tb = document.querySelector(".topbar"); if (!bar || !tb) return;
+  const p = document.createElement("div"); p.className = "lg-prog"; tb.appendChild(p);
+  function ukur() {
+    tb.parentNode.style.setProperty("--tbh", tb.offsetHeight + "px"); document.documentElement.style.setProperty("--tbh", tb.offsetHeight + "px");
+    const r = bar.getBoundingClientRect(), tot = r.height - window.innerHeight, done = Math.min(Math.max(-r.top, 0), Math.max(tot, 1));
+    p.style.width = (tot > 0 ? done / tot * 100 : 100) + "%";
+  }
+  window.addEventListener("scroll", ukur, { passive: true }); window.addEventListener("resize", ukur); ukur();
+}
 function pasangToc() {
+  pasangProgress();
   const links = [].slice.call(document.querySelectorAll(".legal-toc a")); if (!links.length || !("IntersectionObserver" in window)) return;
   const io = new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting) links.forEach(function (l) { l.setAttribute("aria-current", String(l.getAttribute("href") === "#" + e.target.id)); }); });
