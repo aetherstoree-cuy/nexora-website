@@ -61,6 +61,7 @@
   function authInit(mode, root) {
     var forms = $$("form", root);
     function masuk(n, em) { ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); go(mode === "alogin" ? "nexora-admin.html" : "dashboard.html"); }
+    if (location.hash === "#daftar") setTimeout(function () { var d = $('[data-m="daftar"]', root); if (d) d.click(); }, 0);
     $$("[data-m]", root).forEach(function (b) { b.addEventListener("click", function () {
       $$("[data-m]", root).forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
       forms.forEach(function (f) { f.hidden = f.dataset.f !== b.dataset.m; });
@@ -98,12 +99,16 @@
       var sh = document.createElement("div"); sh.className = "side-head"; var lg2 = document.createElement("div"); lg2.className = "logo side-logo"; lg2.innerHTML = lg.innerHTML; lg.parentNode.removeChild(lg); lg = lg2;
       var sx = document.createElement("button"); sx.type = "button"; sx.className = "side-x"; sx.setAttribute("aria-label", "Tutup menu"); sx.innerHTML = '<i class="bi bi-x-lg"></i>';
       side.insertBefore(sh, side.firstChild); sh.appendChild(lg); sh.appendChild(sx);
+      var sn = document.createElement("div"); sn.className = "side-nav"; var sf = document.createElement("div"); sf.className = "side-foot";
+      [].slice.call(side.children).forEach(function (x) { if (x === sh || x === st || x.classList.contains("who")) return; (x.classList.contains("home") || x.id === "logout" ? sf : sn).appendChild(x); });
+      if (adm) { var ct = $('[data-tab="customer"]', sn); if (ct) sn.appendChild(ct); }
+      side.appendChild(sn); side.appendChild(sf);
       var tl = document.createElement("div"); tl.className = "tb-l"; tl.appendChild(st);
       var dl = document.createElement("span"); dl.className = "tb-sub"; dl.textContent = adm ? "Dashboard Admin" : "Dashboard"; tl.appendChild(dl);
       w.insertBefore(tl, nr); root.insertBefore(hd, $(".dmain", root));
       var un = ss("nx-name") || (adm ? "Admin" : "Customer"), em = ss("nx-email") || "-";
       var uw = document.createElement("div"); uw.className = "uwrap";
-      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false"><span class="av">' + e(un.charAt(0).toUpperCase()) + '</span><span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="um-i"><b>' + e(un) + "</b><small>" + e(em) + '</small></div><div class="um-sep"></div><button type="button" class="um-o"><i class="bi bi-box-arrow-right"></i> Logout</button></div>';
+      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false"><span class="av"><i class="bi bi-person-fill"></i></span><span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="um-i"><span class="av um-av">' + e(un.charAt(0).toUpperCase()) + '</span><div class="um-n"><b>' + e(un) + '</b><small><i class="bi bi-envelope"></i>' + e(em) + '</small></div></div><div class="um-sep"></div>' + (adm ? "" : '<button type="button" class="um-a" data-tab="profil"><i class="bi bi-person"></i> Profil saya</button>') + '<button type="button" class="um-a" data-tab="ringkasan"><i class="bi bi-grid-1x2"></i> Dashboard</button><div class="um-sep"></div><button type="button" class="um-o"><i class="bi bi-box-arrow-right"></i> Logout</button></div>';
       nr.appendChild(uw);
       if (!adm) {
         var nw = document.createElement("div"); nw.className = "nwrap";
@@ -138,6 +143,7 @@
       function uOpen(o) { um.hidden = !o; uc.setAttribute("aria-expanded", String(o)); }
       uc.addEventListener("click", function (ev) { ev.stopPropagation(); if (nfClose) nfClose(); uOpen(um.hidden); });
       $(".um-o", uw).addEventListener("click", function () { uOpen(false); outAsk(); });
+      $$(".um-a", uw).forEach(function (b) { b.addEventListener("click", function () { uOpen(false); }); });
       document.addEventListener("click", function (ev) { if (!uw.contains(ev.target)) uOpen(false); });
       sx.addEventListener("click", function () { setOpen(false); });
       scrim.addEventListener("click", function () { setOpen(false); });
@@ -857,9 +863,11 @@
     });
     window.addEventListener("storage", function (ev) { if (ev.key === "nx-tk" || ev.key === "nx-or" || ev.key === "nx-bill" || ev.key === "nx-notif") remote(); });
     draw();
+    if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); if (actCount() >= MAXT) { limitModal(); } else { tab = "buka"; draw(); } }
   }
 
   window.nxDash = function () {
+    if (location.hash === "#buka") ss("nx-next", "buka");
     var root = $("[data-dash]"); if (!root) return; var m = root.dataset.dash;
     if (m === "login" || m === "alogin") return authInit(m, root);
     var need = m === "admin" ? "admin" : "cust";

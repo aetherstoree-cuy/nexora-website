@@ -230,73 +230,32 @@ function pasangSpot() {
 /* ===== 5b. CARA KERJA, MARQUEE, DROPDOWN URUTKAN ===== */
 const ALUR = {
   tahu: [
-    { j: "Pilih kategori ticket", d: "Buka channel ticket di Discord NEXORA, lalu pilih kategori ticket yang sesuai.",
-      v: "opsi", x: { cap: "Pilih kategori ticket", sel: 0, o: [["Ticket Order", "Pesan jasa setup atau hosting"], ["Ticket Bantuan Admin", "Laporkan Kendalamu"]] } },
-    { j: "Pilih jenis pesananmu", d: "Tentukan jenis pesananmu: Setup Minecraft, Setup Discord, atau Hosting.",
-      v: "opsi", x: { cap: "Pilih jenis pesanan", sel: 0, o: [["Setup Minecraft", "Server Java atau Bedrock"], ["Setup Discord", "Channel, role, dan bot"], ["Hosting", "Basic & Premium"]] } },
-    { j: "Pilih paket yang mau kamu pesan", d: "Pilih paket yang cocok dengan kebutuhanmu dari daftar harga.",
-      v: "opsi", x: { cap: "Pilih paket yang mau dipesan", sel: 0, o: [["Plugin Minecraft", ""], ["Server Survival Biasa", ""], ["Server SMP", ""]] } },
-    { j: "Ticket dibuat, tunggu admin", d: "Ticket kamu langsung dibuat. Tunggu sampai admin merespon ticket kamu.",
-      v: "chat", x: { cap: "order-{{user.username}} \u00b7 Menunggu admin", m: [
-        ["us", "Hallo kak, ticket order kamu sudah kami terima, tunggu sampai admin merespon jika tidak ada admin yang merespon selama 20 menit silahkan tag @Nexora Team."]
-      ] } },
-    { j: "Admin membalas ticket kamu", d: "Admin membaca pesananmu dan membalas langsung di ticket.",
-      v: "chat", x: { cap: "order-{{user.username}} \u00b7 Admin merespon", m: [
+    { j: "Masuk atau buat akun", d: "Klik Masuk di pojok kanan atas. Belum punya akun? Daftar gratis, cukup nama dan email.",
+      v: "opsi", x: { cap: "Akun NEXORA", sel: 0, o: [["Masuk", "Sudah punya akun"], ["Buat akun", "Daftar gratis dalam semenit"]] } },
+    { j: "Buka ticket di dashboard", d: "Di dashboard customer, klik Buka ticket lalu pilih kategori: order baru atau bantuan admin.",
+      v: "opsi", x: { cap: "Buka ticket", sel: 0, o: [["Order baru", "Pesan jasa setup atau hosting"], ["Bantuan admin", "Laporkan kendala atau tanya dulu"]] } },
+    { j: "Pilih paket dan ceritakan kebutuhanmu", d: "Pilih paket dari daftar harga, lalu tulis kebutuhanmu: versi, jumlah pemain, plugin atau fitur yang diinginkan.",
+      v: "opsi", x: { cap: "Pilih paket yang mau dipesan", sel: 1, o: [["Plugin Minecraft", ""], ["Server Survival Biasa", ""], ["Server SMP", ""]] } },
+    { j: "Admin membalas ticket kamu", d: "Admin membaca pesananmu dan membalas langsung di ticket. Kalau masih bingung, tanya aja di sini.",
+      v: "chat", x: { cap: "Ticket \u00b7 Terhubung dengan admin", m: [
         ["us", "Hallo kak, pesananmu sudah kami terima. Kami cek detailnya dulu yaa."],
         ["me", "Oke min, terima kasih."]
       ] } },
-    { j: "Admin meminta pembayaran", d: "Admin mengonfirmasi harga akhir, lalu kamu diminta melakukan pembayaran.",
-      v: "chat", x: { cap: "order-{{user.username}} \u00b7 Pembayaran", m: [
-        ["us", "Untuk Plugin Minecraft yang kaka pesan Harganya Rp 10.000 yaa. Lanjut Payment?"],
-        ["me", "Gas min, aku bayar sekarang."],
-        ["us", "Mau payment pakai apa kak?"],
-        ["me", "Aku mau pakai Dana."],
-        ["us", "Oke, silahkan transfer ke 083xxxx a.n. Xx, lalu kirim bukti transfernya di sini yaa."]
-      ] } },
-    { j: "Kamu membayar", d: "Kirim bukti pembayaran di ticket, lalu pesananmu segera disiapkan oleh admin.",
-      v: "chat", x: { cap: "order-{{user.username}} \u00b7 Pesanan diproses", m: [
+    { j: "Terima tagihan dan bayar", d: "Admin mengirim tagihan dengan harga akhir. Transfer sesuai petunjuk, lalu kirim bukti bayarnya di ticket.",
+      v: "chat", x: { cap: "Ticket \u00b7 Menunggu pembayaran", m: [
+        ["us", "Untuk Plugin Minecraft yang kaka pesan harganya Rp 10.000 yaa. Tagihannya sudah kami kirim."],
         ["me", "Sudah aku transfer, ini bukti transfernya."],
-        ["us", "Terima kasih, pembayaran sudah kami terima. Pesanan kamu segera kami siapkan."]
+        ["us", "Terima kasih, pembayaran sudah kami konfirmasi."]
       ] } },
-    { j: "Pesanan kamu diterima", d: "Pesanan sudah disiapkan dan kamu menerima pesananmu.",
-      v: "selesai", x: { ok: "Pesanan siap", t: ["Pesanan selesai disiapkan", "Pesanan dikirim lewat ticket", "Kamu menerima pesananmu"] } },
-    { j: "Beri penilaian", d: "Pesanan selesai dan kamu diminta menilai pelayanan NEXORA.",
-      v: "rating", x: { cap: "Bagaimana pelayanan NEXORA?", cta: "Kirim penilaian" } },
-    { j: "Ticket ditutup", d: "Setelah kamu menilai, admin menutup ticket kamu.",
-      v: "selesai", x: { ok: "Ticket ditutup", closed: true, t: ["Penilaian kamu terkirim", "Admin menutup ticket", "Terima kasih sudah order di NEXORA"] } }
-  ],
-  bingung: [
-    { j: "Masuk ke channel konsultasi", d: "Join Discord NEXORA, lalu buka channel konsultasi. Tidak perlu open ticket dulu.",
-      v: "opsi", x: { cap: "💼 𝗖𝗟𝗜𝗘𝗡𝗧 𝗔𝗥𝗘𝗔", sel: 1, o: [["# 💬・ᴄʟɪᴇɴᴛ-ᴄʜᴀᴛ", "Informasi dan aturan server"], ["# 📝・ᴋᴏɴꜱᴜʟᴛᴀꜱɪ", "Tanya dan ngobrol soal apa yang kammu butuhkan"], ["# 👀・ᴄʟɪᴇɴᴛ-ʀᴇᴠɪᴇᴡ", "Ulasan dari pelanggan"]] } },
-    { j: "Ceritakan kebutuhanmu di channel", d: "Chat langsung di channel: server seperti apa yang kamu bayangkan, jumlah pemain, dan fitur yang kamu mau.",
-      v: "chat", x: { cap: "# 📝・ᴋᴏɴꜱᴜʟᴛᴀꜱɪ", m: [
-        ["me", "Aku mau bikin server survival buat teman-teman, tapi bingung pilih paket."],
-        ["me", "Sekitar 20 orang."]
-      ] } },
-    { j: "Admin membalas di channel", d: "Admin membalas langsung di channel dan membantu menjawab pertanyaanmu.",
-      v: "chat", x: { cap: "# 📝・ᴋᴏɴꜱᴜʟᴛᴀꜱɪ", m: [
-        ["us", "Hallo kak, Kami carikan paket yang paling pas yaa."],
-        ["me", "Oke min, terima kasih."],
-        ["us", "Hallo kak, untuk paket yang sesuai dengan kebutuhan kaka itu ambil hosting yang Flame harganya Rp 70.000/bulan kak."],
-        ["me", "Boleh min, aku ambil paket itu."],
-        ["us", "Oke kak, kalau sudah cocok, open ticket kategori Order di Discord dan tunggu admin merespon."],
-      ] } },
-    { j: "Open ticket order", d: "Kalau sudah cocok, open ticket kategori Order di Discord dan tunggu admin merespon.",
-      v: "opsi", x: { cap: "Pilih kategori ticket", sel: 0, o: [["Ticket Order", "Pesan jasa setup atau hosting"], ["Ticket Bantuan Admin", "Laporkan Kendalamu"]] } },
-    { j: "Pilih jenis pesananmu", d: "Tentukan jenis pesananmu: Setup Minecraft, Setup Discord, atau Hosting.",
-      v: "opsi", x: { cap: "Pilih jenis pesanan", sel: 2, o: [["Setup Minecraft", "Server Java atau Bedrock"], ["Setup Discord", "Channel, role, dan bot"], ["Hosting", "Basic & Premium"]] } },
-    { j: "Admin meminta pembayaran", d: "Admin mengonfirmasi harga akhir, lalu kamu diminta melakukan pembayaran.",
-      v: "chat", x: { cap: "order-{{user.username}} \u00b7 Pembayaran", m: [
-        ["us", "Untuk paket Hosting Basic Flame harganya Rp 70.000/bulan yaa. Lanjut Payment?"],
-        ["me", "Gas min, aku bayar sekarang."],
-        ["us", "Mau payment pakai apa kak?"],
-        ["me", "Aku mau pakai Dana."],
-        ["us", "Oke, silahkan transfer ke 083xxxx a.n. Xx, lalu kirim bukti transfernya di sini yaa."]
-      ] } }
-  ],
+    { j: "Pesanan diproses", d: "Setelah pembayaran dikonfirmasi, admin mengerjakan pesananmu. Perkembangannya bisa kamu pantau dari ticket.",
+      v: "progres" },
+    { j: "Pesanan selesai", d: "Pesananmu selesai dan diserahkan lewat ticket. Kalau ada yang kurang, kamu masih bisa chat admin.",
+      v: "selesai", x: { ok: "Orderan selesai", t: ["Pesanan selesai disiapkan", "Pesanan dikirim lewat ticket", "Kamu menerima pesananmu"] } },
+    { j: "Ticket ditutup", d: "Kalau semua sudah beres, admin menutup ticket. Riwayatnya tetap bisa kamu lihat di dashboard.",
+      v: "selesai", x: { ok: "Ticket ditutup", closed: true, t: ["Pesananmu sudah beres", "Admin menutup ticket", "Terima kasih sudah order di NEXORA"] } }
+  ]
 };
-/* Langkah 7-10 sama untuk kedua jalur */
-ALUR.bingung = ALUR.bingung.concat(ALUR.tahu.slice(6));
+ALUR.bingung = ALUR.tahu;
 
 function panelAlur(s) {
   function k(i) { return ' style="--k:' + i + '"'; }
@@ -684,7 +643,34 @@ function pasangKeTab() {
   });
 }
 
+function gulirKe(id, tab) {
+  if (tab) HARGA_AKTIF.forEach(function (h) { if (h.root.querySelector('.tab[data-layanan="' + tab + '"]')) h.tampilkan(tab); });
+  const t = document.getElementById(id); if (!t) return false;
+  const tb = document.querySelector(".topbar");
+  window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - (tb ? tb.offsetHeight : 0) + 1, behavior: "smooth" });
+  return true;
+}
+function pasangAnchor() {
+  const kini = location.pathname.replace(/\/index\.html$/, "/");
+  function urai(a) {
+    let u; try { u = new URL(a.getAttribute("href"), location.href); } catch (x) { return null; }
+    if (!u.hash || u.origin !== location.origin || u.pathname.replace(/\/index\.html$/, "/") !== kini) return null;
+    const h = u.hash.slice(1), m = h.match(/^harga-(minecraft|discord)$/);
+    return m ? { id: "harga", tab: m[1], h: u.hash } : { id: h, tab: null, h: u.hash };
+  }
+  document.addEventListener("click", function (ev) {
+    const a = ev.target.closest && ev.target.closest("a[href]"); if (!a || a.target === "_blank" || ev.defaultPrevented || ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
+    const r = urai(a); if (!r || !document.getElementById(r.id)) return;
+    ev.preventDefault();
+    const tb = document.querySelector(".topbar"); if (tb && tb.classList.contains("open")) { const mb = tb.querySelector(".menu-btn"); if (mb) mb.click(); }
+    gulirKe(r.id, r.tab); history.pushState(null, "", r.h);
+  });
+  const m = location.hash.match(/^#harga-(minecraft|discord)$/);
+  if (m) setTimeout(function () { gulirKe("harga", m[1]); }, 60);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  pasangAnchor();
   pasangFaq();
   siapkanAnimasi(document);
   siapkanHero();
