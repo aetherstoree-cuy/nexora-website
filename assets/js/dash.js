@@ -21,6 +21,11 @@
   function bd(s, short) { return '<span class="bd ' + (BC[s] || "b1") + '">' + e(short && SHORT[s] ? SHORT[s] : s) + "</span>"; }
   var MAXT = 3;
   function me() { return ss("nx-name") || "Customer"; }
+  function hm() { var d = new Date(); return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); }
+  function ptime(id, i) { var n = 0; for (var k = 0; k < id.length; k++) n = (n * 31 + id.charCodeAt(k)) % 997; n = (n + i * 137) % 720; return ("0" + (8 + Math.floor(n / 60))).slice(-2) + ":" + ("0" + (n % 60)).slice(-2); }
+  function dayL(m) { return m.d === "Baru saja" || m.d === "Hari ini" ? "Hari ini" : m.d; }
+  var NCOL = ["#d9534f", "#2a9a56", "#3b7ddd", "#c43d85", "#0e9594", "#b7791f"];
+  function ncol(n) { var h = 0; for (var i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) % 97; return NCOL[h % NCOL.length]; }
   function uname(t) { return t.user === "__me" ? (window.__nxAdm ? ld("nx-cust", "Demo Customer") : me()) : t.user; }
   var LEG = { Terbuka: "Menunggu admin balas", Diproses: "Pesanan Diproses", Selesai: "Orderan Selesai" };
   function mig(a) { a.forEach(function (x) { if (LEG[x.st]) { if (x.st === "Selesai") x.closed = true; x.st = LEG[x.st]; } }); return a; }
@@ -100,9 +105,38 @@
       var uw = document.createElement("div"); uw.className = "uwrap";
       uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false"><span class="av">' + e(un.charAt(0).toUpperCase()) + '</span><span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="um-i"><b>' + e(un) + "</b><small>" + e(em) + '</small></div><div class="um-sep"></div><button type="button" class="um-o"><i class="bi bi-box-arrow-right"></i> Logout</button></div>';
       nr.appendChild(uw);
+      if (!adm) {
+        var nw = document.createElement("div"); nw.className = "nwrap";
+        nw.innerHTML = '<button type="button" class="nbell" aria-label="Notifikasi" aria-haspopup="true" aria-expanded="false"><i class="bi bi-bell"></i><b class="nb" hidden>0</b></button><div class="nmenu" hidden><div class="nm-h"><b>Notifikasi</b><button type="button" class="nm-all">Tandai semua dibaca</button></div><div class="nm-l"></div><div class="nm-f" hidden><button type="button" class="nm-p"><i class="bi bi-bell"></i> Aktifkan notifikasi browser</button></div></div>';
+        nr.insertBefore(nw, uw);
+        var nbtn = $(".nbell", nw), nmn = $(".nmenu", nw), nbg = $(".nb", nw), seen = null;
+        function nOpen(o) { nmn.hidden = !o; nbtn.setAttribute("aria-expanded", String(o)); if (o) { uOpen(false); nfUp(); } }
+        function ago(ts) { var m = Math.round((Date.now() - ts) / 60000); return m < 1 ? "Baru saja" : m < 60 ? m + " mnt lalu" : m < 1440 ? Math.floor(m / 60) + " jam lalu" : new Date(ts).toLocaleDateString("id-ID", { day: "numeric", month: "short" }); }
+        nfUp = function () {
+          var a = nfMine(), un = a.filter(function (n) { return !n.r; });
+          nbg.hidden = !un.length; nbg.textContent = un.length > 9 ? "9+" : un.length;
+          nbtn.setAttribute("aria-label", "Notifikasi" + (un.length ? ", " + un.length + " belum dibaca" : ""));
+          $(".nm-l", nw).innerHTML = a.slice(0, 20).map(function (n) { return '<button type="button" class="nm-i' + (n.r ? "" : " un") + '" data-n="' + n.id + '"><span class="nm-ic ' + n.k + '"><i class="bi bi-' + (n.k === "bill" ? "receipt" : "chat-dots") + '"></i></span><span class="nm-t"><b>' + e(n.t) + "</b><small>" + e(n.x) + "</small><em>" + ago(n.ts) + "</em></span>" + (n.r ? "" : '<i class="nm-d"></i>') + "</button>"; }).join("") || '<div class="nm-e"><i class="bi bi-bell-slash"></i><b>Belum ada notifikasi</b><small>Balasan admin dan update tagihan akan muncul di sini.</small></div>';
+          $(".nm-f", nw).hidden = !("Notification" in window) || Notification.permission !== "default";
+          if (seen === null) { seen = {}; a.forEach(function (n) { seen[n.id] = 1; }); return; }
+          un.forEach(function (n) { if (seen[n.id]) return; seen[n.id] = 1; if ("Notification" in window && Notification.permission === "granted") { try { new Notification(n.t, { body: n.x, icon: "../assets/img/icon-192.png" }); } catch (er) {} } });
+        };
+        nbtn.addEventListener("click", function (ev) { ev.stopPropagation(); nOpen(nmn.hidden); });
+        $(".nm-all", nw).addEventListener("click", function () { var a = nfAll(); a.forEach(function (n) { if (n.u === "__me" || n.u === me()) n.r = true; }); sv("nx-notif", a); nfUp(); });
+        $(".nm-p", nw).addEventListener("click", function () { Notification.requestPermission().then(function () { nfUp(); toast(Notification.permission === "granted" ? "Notifikasi browser aktif" : "Izin notifikasi ditolak"); }); });
+        $(".nm-l", nw).addEventListener("click", function (ev) {
+          var it = ev.target.closest("[data-n]"); if (!it) return;
+          var a = nfAll(), n = a.filter(function (x) { return x.id === it.dataset.n; })[0]; if (!n) return; n.r = true; sv("nx-notif", a); nOpen(false);
+          var tk = TK().filter(function (x) { return x.id === n.tk; })[0]; if (tk) { sel = tk.id; tv = "chat"; tab = cl(tk) ? "riwayat" : "tiket"; setOpen(false); draw(); } else nfUp();
+        });
+        document.addEventListener("click", function (ev) { if (!nw.contains(ev.target)) nOpen(false); });
+        document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") nOpen(false); });
+        nfClose = function () { nOpen(false); };
+        nfUp();
+      }
       var uc = $(".uchip", uw), um = $(".umenu", uw);
       function uOpen(o) { um.hidden = !o; uc.setAttribute("aria-expanded", String(o)); }
-      uc.addEventListener("click", function (ev) { ev.stopPropagation(); uOpen(um.hidden); });
+      uc.addEventListener("click", function (ev) { ev.stopPropagation(); if (nfClose) nfClose(); uOpen(um.hidden); });
       $(".um-o", uw).addEventListener("click", function () { uOpen(false); outAsk(); });
       document.addEventListener("click", function (ev) { if (!uw.contains(ev.target)) uOpen(false); });
       sx.addEventListener("click", function () { setOpen(false); });
@@ -125,6 +159,13 @@
     $("#who").textContent = ss("nx-name") || (adm ? "Admin" : "Customer"); var wv = $("#wav"); if (wv) wv.textContent = me().charAt(0).toUpperCase();
     function mine() { return TK().filter(function (x) { return x.user === "__me" || x.user === me(); }); }
     function last(t) { return t.m[t.m.length - 1]; }
+    function nfAll() { return ld("nx-notif", []); }
+    function nfMine() { return nfAll().filter(function (n) { return n.u === "__me" || n.u === me(); }); }
+    function nt(x, kind, title, text) {
+      var P = ld("nx-prof", {}); if ((kind === "tk" && P.nTk === false) || (kind === "bill" && P.nBill === false)) return;
+      var a = nfAll(); a.unshift({ id: "N" + Date.now() + Math.random().toString(36).slice(2, 6), u: x.user, k: kind, t: title, x: text, tk: x.id, ts: Date.now(), r: false }); sv("nx-notif", a.slice(0, 60));
+    }
+    var nfUp, nfClose;
     function actCount() { return mine().filter(function (x) { return !cl(x); }).length; }
     function limitModal() {
       modal('<div class="mbox sm warn" role="alertdialog" aria-modal="true" aria-labelledby="lm-t"><span class="warn-ic am"><i class="bi bi-exclamation-triangle"></i></span><div class="mb"><h3 id="lm-t">Batas ticket tercapai</h3><p>Kamu sudah mempunyai ' + MAXT + ' ticket aktif silahkan menutup 1 ticket untuk membuat ticket baru.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Mengerti</button><button type="button" class="btn" data-ok>Lihat ticket</button></div></div>', function (m, close) {
@@ -139,7 +180,7 @@
     }
     function tkStat(id, st, note) {
       var a = TK(), ch = false;
-      a.forEach(function (x) { if (x.id === id && !cl(x) && x.st !== st) { x.st = st; x.m.push({ w: "s", t: note || ("Status: " + st), d: "Baru saja" }); ch = true; syncOrd(x); } });
+      a.forEach(function (x) { if (x.id === id && !cl(x) && x.st !== st) { x.st = st; x.m.push({ w: "s", t: note || ("Status: " + st), d: "Baru saja", h: hm() }); ch = true; syncOrd(x); nt(x, /agihan|embayaran/.test(note || "") ? "bill" : "tk", /dibatalkan/.test(note || "") ? "Tagihan dibatalkan" : st === "Menunggu pembayaran" ? "Tagihan baru" : st === "Pembayaran Dikonfirmasi" ? "Pembayaran dikonfirmasi" : "Status diperbarui", (note || st) + " · " + x.id); } });
       if (ch) sv("nx-tk", a);
     }
     var AFS = ["Aktif", "Menunggu admin balas", "Terhubung dengan admin", "Menunggu pembayaran", "Pembayaran Dikonfirmasi", "Pesanan Diproses", "Orderan Selesai", "Riwayat"], snap = {};
@@ -155,12 +196,14 @@
     }
 
     function thread(t, back) {
-      var mineW = adm ? "a" : "c", prev = "", closed = cl(t);
-      var body = '<div class="sys">Ticket dibuat · ' + e(t.tgl) + "</div>" + t.m.map(function (m) {
-        if (m.w === "s") { prev = ""; return '<div class="sys">' + e(m.t) + " · " + e(m.d) + "</div>"; }
+      var mineW = adm ? "a" : "c", prev = "", closed = cl(t), pd = t.m.length ? dayL(t.m[0]) : "";
+      var body = '<div class="sys">Ticket dibuat · ' + e(t.tgl) + "</div>" + t.m.map(function (m, i) {
+        var tm = m.h || ptime(t.id, i);
+        if (m.w === "s") { prev = ""; return '<div class="sys">' + e(m.t) + " · " + e(dayL(m)) + ", " + tm + "</div>"; }
+        var dv = ""; if (dayL(m) !== pd) { pd = dayL(m); dv = '<div class="sys day">' + e(pd) + "</div>"; prev = ""; }
         var first = m.w !== prev, mn = m.w === mineW; prev = m.w;
-        var who = m.w === "a" ? "Admin NEXORA" : (adm ? uname(t) : "Kamu");
-        return '<div class="row ' + (mn ? "me" : "ot") + '">' + (mn ? "" : first ? (m.w === "a" ? '<span class="av nx"><i class="bi bi-box2"></i></span>' : av(uname(t))) : '<span class="av gh"></span>') + '<div class="col">' + (first && !mn ? '<small class="nm">' + e(who) + "</small>" : "") + '<div class="bub">' + e(m.t) + "<time>" + e(m.d) + "</time></div></div></div>";
+        var who = m.w === "a" ? "Admin NEXORA" : uname(t), nc = m.w === "a" ? "var(--accent)" : ncol(who);
+        return dv + '<div class="row ' + (mn ? "me" : "ot") + '">' + (mn ? "" : first ? (m.w === "a" ? '<span class="av nx"><i class="bi bi-box2"></i></span>' : av(uname(t))) : '<span class="av gh"></span>') + '<div class="col"><div class="bub"><span class="bn" style="--nc:' + nc + '">' + e(who) + (mn ? " · kamu" : "") + "</span>" + e(m.t) + "<time>" + tm + "</time></div></div></div>";
       }).join("") + (closed && last(t).w !== "s" ? '<div class="sys">Ticket ditutup</div>' : "");
       var si = ST.indexOf(t.st), nmsg = t.m.filter(function (m) { return m.w !== "s"; }).length;
       var info = '<div class="th-i"><div class="th-c"><span><i class="bi bi-tag"></i>' + e(t.kat) + "</span>" + (t.paket !== "-" ? '<span><i class="bi bi-box2"></i>' + e(t.paket) + "</span>" : "") + '<span><i class="bi bi-calendar3"></i>' + e(t.tgl) + "</span>" + (adm ? '<span><i class="bi bi-person"></i>' + e(uname(t)) + "</span>" : "") + '<span><i class="bi bi-chat-text"></i>' + nmsg + ' pesan</span></div><div class="stpr"><div class="stpr-b' + (closed ? " done" : "") + '">' + ST.map(function (s2, i) { return '<i class="' + (closed || i <= si ? "on" : "") + (i === si && !closed ? " cur" : "") + '" title="' + s2 + '"></i>'; }).join("") + "</div><small>" + (closed ? "Ticket ditutup" : "Langkah " + (si + 1) + " dari " + ST.length + " · <b>" + e(t.st) + "</b>") + "</small></div></div>";
@@ -238,7 +281,7 @@
       f.subj.placeholder = ord ? "Boleh dikosongkan, otomatis jadi Order " + (p ? p.nama : "") : "Ringkas masalah atau pertanyaanmu";
       f.msg.placeholder = ord ? "Ceritakan kebutuhanmu: versi Minecraft, jumlah pemain, plugin atau mod yang diinginkan, dll." : "Tulis pesanmu dengan jelas agar cepat kami bantu.";
     }
-    function li(a) { return a.map(function (x) { return '<button class="li" data-gt="' + x.id + '"><span><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(x.tgl) + "</small></span>" + bd(x.st) + "</button>"; }).join("") || '<p class="muted">Belum ada.</p>'; }
+    function li(a) { return a.map(function (x) { return '<button class="li" data-gt="' + x.id + '"><span><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(x.tgl) + "</small></span>" + bd(x.st, 1) + "</button>"; }).join("") || '<p class="muted">Belum ada.</p>'; }
     function harga(kind) {
       var H = HG(), rows = kind === "hosting" ? H.hosting : H.jasa[hs], j = kind === "jasa", cats = [];
       rows.forEach(function (p) { if (cats.indexOf(p.kat) < 0) cats.push(p.kat); });
@@ -450,7 +493,7 @@
     function bUpd(id, st, aksi, r) {
       var all = BL(); all.forEach(function (b) {
         if (b.id !== id) return; b.st = st; b.log.push({ a: aksi + (r ? ": " + r : ""), by: me(), at: stamp() });
-        if (b.ticket) { var tk = TK(); tk.forEach(function (x) { if (x.id === b.ticket) x.m.push({ w: "s", t: "Tagihan " + id + (st === "Lunas" ? " ditandai lunas" : " dibatalkan"), d: "Baru saja" }); }); sv("nx-tk", tk); }
+        if (b.ticket) { var tk = TK(); tk.forEach(function (x) { if (x.id === b.ticket) x.m.push({ w: "s", t: "Tagihan " + id + (st === "Lunas" ? " ditandai lunas" : " dibatalkan"), d: "Baru saja", h: hm() }); }); sv("nx-tk", tk); }
       });
       var bb = all.filter(function (x) { return x.id === id; })[0], oth = bb && all.some(function (o) { return o.id !== id && o.tk === bb.tk && o.st === "Belum dibayar"; });
       sv("nx-bill", all);
@@ -462,10 +505,15 @@
     }
     function bDetail(id) {
       var b = BL().filter(function (x) { return x.id === id; })[0]; if (!b) return; var act = b.st === "Belum dibayar", hs = bj(b) === "hosting";
-      modal('<div class="mbox"><div class="mh"><b>' + e(b.id) + " " + bd(bs(b)) + '</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb">' +
-        srows([["Customer", bcust(b)], ["Jenis", hs ? "Hosting berkala" : "Bill order"], ["Order ticket", b.tk], ["Paket", b.item]].concat(hs ? [] : [["Keterangan", b.ket || "-"]]).concat([["Siklus", b.siklus], ["Harga dasar", rp(b.dasar)], ["Penyesuaian", b.adj === "none" ? "-" : (b.adj === "diskon" ? "-" : "+") + b.pct + "% (" + b.alasan + ")"], ["Total", rp(b.total)], ["Jatuh tempo", fdt(b.jatuh) + (act ? " · " + rel(b) : "")], ["Dibuat oleh", b.by + " · " + fdt(b.dibuat)], hs ? ["Ticket pembayaran", b.ticket || "Belum dibuka customer"] : ["Konfirmasi bayar", b.lapor ? "Customer sudah konfirmasi · " + b.lapor : "Belum ada konfirmasi"]])) +
-        '<h2>Log aktivitas</h2><ul class="blog">' + b.log.map(function (l) { return "<li>" + e(l.a) + "<small>" + e(l.by) + " · " + e(l.at) + "</small></li>"; }).join("") + "</ul></div>" +
-        (act ? '<div class="mf"><button type="button" class="btn ghost" data-pay>Tandai lunas</button><button type="button" class="btn dng" data-void>Batalkan tagihan</button></div>' : "") + "</div>", function (m, close) {
+      var dl = function (rows) { return '<dl class="bd-dl">' + rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + (r[2] ? r[1] : e(r[1])) + "</dd></div>"; }).join("") + "</dl>"; };
+      var adj = b.adj === "none" ? "Tidak ada" : (b.adj === "diskon" ? "Diskon " : "Biaya tambahan ") + b.pct + "%" + (b.alasan ? " (" + e(b.alasan) + ")" : "");
+      modal('<div class="mbox bd-m"><div class="mh"><div class="bd-ti"><b>' + e(b.id) + "</b>" + bd(bs(b)) + '</div><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb">' +
+        '<div class="bd-top"><div><small>Total tagihan</small><strong>' + rp(b.total) + '</strong></div><div class="bd-dd"><small>Jatuh tempo</small><b>' + fdt(b.jatuh) + "</b>" + (act ? "<em>" + rel(b) + "</em>" : "") + "</div></div>" +
+        '<section class="bd-s"><h4><i class="bi bi-person"></i> Informasi</h4>' + dl([["Customer", bcust(b)], ["Jenis", hs ? "Hosting berkala" : "Bill order"], ["Paket", b.item], ["Siklus", b.siklus], ["Order ticket", b.tk || "-"]].concat(hs ? [] : [["Keterangan", b.ket || "-"]])) + "</section>" +
+        '<section class="bd-s"><h4><i class="bi bi-cash-stack"></i> Rincian harga</h4>' + dl([["Harga dasar", rp(b.dasar)], ["Penyesuaian", adj, 1], ["Total", "<b>" + rp(b.total) + "</b>", 1]]) + "</section>" +
+        '<section class="bd-s"><h4><i class="bi bi-wallet2"></i> Pembayaran</h4>' + dl([hs ? ["Ticket pembayaran", b.ticket || "Belum dibuka customer"] : ["Konfirmasi bayar", b.lapor ? "Customer sudah konfirmasi · " + b.lapor : "Belum ada konfirmasi"], ["Dibuat oleh", b.by + " · " + fdt(b.dibuat)]]) + "</section>" +
+        '<section class="bd-s"><h4><i class="bi bi-clock-history"></i> Log aktivitas</h4><ol class="bd-tl">' + b.log.map(function (l) { return "<li><b>" + e(l.a) + "</b><small>" + e(l.by) + " · " + e(l.at) + "</small></li>"; }).join("") + "</ol></section></div>" +
+        (act ? '<div class="mf bd-f"><button type="button" class="btn ghost sm" data-pay><i class="bi bi-check2-circle"></i> Tandai lunas</button><button type="button" class="btn dng sm" data-void><i class="bi bi-x-circle"></i> Batalkan tagihan</button></div>' : "") + "</div>", function (m, close) {
         var p = $("[data-pay]", m), v = $("[data-void]", m);
         if (p) p.addEventListener("click", function () { close(); guard({ title: "Tandai lunas?", ok: "Tandai lunas", reason: true, html: "<p>Pastikan pembayaran " + e(b.id) + " (" + rp(b.total) + ") sudah kamu terima. Isi catatan bukti pembayaran.</p>" }, function (r) { bUpd(id, "Lunas", "Ditandai lunas", r); }); });
         if (v) v.addEventListener("click", function () { close(); guard({ title: "Batalkan tagihan?", ok: "Batalkan tagihan", danger: true, reason: true, html: "<p>Tagihan " + e(b.id) + " akan dibatalkan dan tidak bisa dibuka lagi.</p>" }, function (r) { bUpd(id, "Dibatalkan", "Dibatalkan", r); }); });
@@ -501,10 +549,10 @@
       var msg = sudah ? "Halo, saya sudah transfer untuk tagihan " + b.id + " (" + b.item + ", " + rp(b.total) + "). Berikut bukti transfernya, mohon dicek." : "Halo, saya ingin membayar tagihan " + b.id + " (" + b.item + ", " + rp(b.total) + ", jatuh tempo " + fdt(b.jatuh) + "). Mohon info cara pembayarannya.";
       if (!ex) {
         var n = all.reduce(function (m, x) { return Math.max(m, Number(x.id.slice(2)) || 0); }, 1043) + 1, tid = "T-" + n;
-        all.unshift({ id: tid, subj: (sudah ? "Konfirmasi bayar " : "Bayar ") + b.id + " · " + b.item, kat: "Pembayaran", paket: b.item, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: msg, d: "Baru saja" }] }); sv("nx-tk", all);
+        all.unshift({ id: tid, subj: (sudah ? "Konfirmasi bayar " : "Bayar ") + b.id + " · " + b.item, kat: "Pembayaran", paket: b.item, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: msg, d: "Baru saja", h: hm() }] }); sv("nx-tk", all);
         var bl = BL(); bl.forEach(function (x) { if (x.id === id) { x.ticket = tid; x.log.push({ a: "Customer membuka ticket pembayaran " + tid, by: me(), at: stamp() }); } }); sv("nx-bill", bl);
         ex = { id: tid }; toast("Ticket " + tid + " dibuat untuk pembayaran " + b.id);
-      } else if (sudah) { all.forEach(function (x) { if (x.id === ex.id) x.m.push({ w: "c", t: msg, d: "Baru saja" }); }); sv("nx-tk", all); }
+      } else if (sudah) { all.forEach(function (x) { if (x.id === ex.id) x.m.push({ w: "c", t: msg, d: "Baru saja", h: hm() }); }); sv("nx-tk", all); }
       sel = ex.id; tg = "aktif"; tab = "tiket"; tv = "chat"; draw();
     }
     function bPaid(id) {
@@ -512,7 +560,7 @@
       var all = TK(), ot = all.filter(function (x) { return x.id === b.tk && !cl(x); })[0];
       if (!b.lapor) {
         b.lapor = stamp(); (b.log = b.log || []).push({ a: "Customer mengonfirmasi sudah membayar", by: me(), at: stamp() }); sv("nx-bill", bl);
-        if (ot) { ot.m.push({ w: "c", t: "Halo, saya sudah transfer untuk tagihan " + b.id + " (" + b.item + ", " + rp(b.total) + "). Berikut bukti transfernya, mohon dicek.", d: "Baru saja" }); sv("nx-tk", all); }
+        if (ot) { ot.m.push({ w: "c", t: "Halo, saya sudah transfer untuk tagihan " + b.id + " (" + b.item + ", " + rp(b.total) + "). Berikut bukti transfernya, mohon dicek.", d: "Baru saja", h: hm() }); sv("nx-tk", all); }
         toast(ot ? "Konfirmasi terkirim ke ticket " + ot.id + ". Kirim bukti transfermu di sini." : "Konfirmasi pembayaran terkirim ke admin");
       } else toast("Konfirmasi sudah terkirim, tunggu admin mengecek.");
       if (ot) { sel = ot.id; tg = "aktif"; tab = "tiket"; tv = "chat"; }
@@ -673,7 +721,7 @@
         var on = $('[aria-pressed="true"],[aria-current="true"]', el);
         if (on) { var l = on.offsetLeft - el.offsetLeft; if (l < el.scrollLeft) el.scrollLeft = Math.max(0, l - 12); else if (l + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = l + on.offsetWidth - el.clientWidth + 12; }
       });
-      lastTab = tab;
+      lastTab = tab; if (nfUp) nfUp();
       var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1];
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight;
       root.classList.toggle("chatv", !!sel && (tab === "tiket" ? tv === "chat" : (tab === "riwayat" && !adm && tv === "chat")));
@@ -703,7 +751,7 @@
       if (d.af) { af = d.af; return draw(); }
       if (d.of) { of = d.of; return draw(); }
       if (d.hs) { hs = d.hs; hcat.jasa = "semua"; return draw(); }
-      if (d.close !== undefined) return modal('<div class="mbox sm"><div class="mh"><b>Tutup ticket?</b></div><div class="mb"><p>Apakah kamu yakin ingin menutup ticket ini?</p><p class="muted">Setelah ditutup, customer dan admin tidak bisa mengirim pesan lagi dan ticket masuk ke Riwayat.</p></div><div class="mf"><button class="btn ghost" data-x>Batal</button><button class="btn dng" data-ok>Ya, tutup ticket</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { var a = TK(); a.forEach(function (y) { if (y.id === sel) { y.closed = true; y.m.push({ w: "s", t: "Ticket ditutup oleh admin", d: "Baru saja" }); } }); sv("nx-tk", a); close(); toast("Ticket ditutup dan dipindah ke Riwayat"); af = "Riwayat"; draw(); }); });
+      if (d.close !== undefined) return modal('<div class="mbox sm"><div class="mh"><b>Tutup ticket?</b></div><div class="mb"><p>Apakah kamu yakin ingin menutup ticket ini?</p><p class="muted">Setelah ditutup, customer dan admin tidak bisa mengirim pesan lagi dan ticket masuk ke Riwayat.</p></div><div class="mf"><button class="btn ghost" data-x>Batal</button><button class="btn dng" data-ok>Ya, tutup ticket</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { var a = TK(); a.forEach(function (y) { if (y.id === sel) { nt(y, "tk", "Ticket ditutup", y.id + " ditutup oleh admin."); y.closed = true; y.m.push({ w: "s", t: "Ticket ditutup oleh admin", d: "Baru saja", h: hm() }); } }); sv("nx-tk", a); close(); toast("Ticket ditutup dan dipindah ke Riwayat"); af = "Riwayat"; draw(); }); });
       if (d.add !== undefined) return formPaket(tab, null);
       if (d.edit !== undefined) return formPaket(tab, Number(d.edit));
       if (d.del !== undefined) { var H = HG(), r = tab === "hosting" ? H.hosting : H.jasa[hs], i = Number(d.del); return modal('<div class="mbox sm"><div class="mh"><b>Hapus paket?</b></div><div class="mb"><p class="muted">Paket "' + e(r[i].nama) + '" akan dihapus dari daftar.</p></div><div class="mf"><button class="btn ghost" data-x>Batal</button><button class="btn dng" data-ok>Hapus</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { r.splice(i, 1); sv("nx-harga", H); close(); toast("Paket dihapus"); draw(); }); }); }
@@ -734,7 +782,7 @@
     root.addEventListener("change", function (ev) {
       var t = ev.target;
       if (t.closest("#f-buka")) bukaSync();
-      if (t.matches("[data-st]")) { var a = TK(); a.forEach(function (x) { if (x.id === sel && x.st !== t.value) { x.st = t.value; x.m.push({ w: "s", t: "Status diubah: " + t.value, d: "Baru saja" }); syncOrd(x); } }); sv("nx-tk", a); toast("Status diperbarui"); draw(); }
+      if (t.matches("[data-st]")) { var a = TK(); a.forEach(function (x) { if (x.id === sel && x.st !== t.value) { x.st = t.value; x.m.push({ w: "s", t: "Status diubah: " + t.value, d: "Baru saja", h: hm() }); syncOrd(x); nt(x, "tk", "Status diperbarui", x.id + " · " + t.value); } }); sv("nx-tk", a); toast("Status diperbarui"); draw(); }
       if (t.id === "lg" && t.files[0]) { setLogo(t.files[0]); t.value = ""; }
       if (t.id === "qr" && t.files[0]) { setQR(t.files[0]); t.value = ""; }
     });
@@ -746,20 +794,20 @@
       if (f.matches("[data-rep]")) {
         var txt = $("textarea", f).value.trim(); if (!txt) return; var a = TK(), cur = a.filter(function (x) { return x.id === sel; })[0];
         if (!cur || cl(cur)) { toast("Ticket sudah ditutup, chat tidak bisa dikirim"); return draw(); }
-        cur.m.push({ w: adm ? "a" : "c", t: txt, d: "Baru saja" }); if (adm && cur.st === "Menunggu admin balas") cur.st = "Terhubung dengan admin"; sv("nx-tk", a); draw();
-        if (!adm) { var tid = sel; setTimeout(function () { var b = TK(); b.forEach(function (x) { if (x.id === tid && !cl(x) && last(x).w === "c") x.m.push({ w: "a", t: "Terima kasih, pesanmu sudah kami terima. Tim NEXORA akan segera membalas. (balasan otomatis demo)", d: "Baru saja" }); }); sv("nx-tk", b); remote(); }, 3500); }
+        cur.m.push({ w: adm ? "a" : "c", t: txt, d: "Baru saja", h: hm() }); if (adm) nt(cur, "tk", "Balasan baru · " + cur.id, "Admin: " + (txt.length > 80 ? txt.slice(0, 80) + "…" : txt)); if (adm && cur.st === "Menunggu admin balas") cur.st = "Terhubung dengan admin"; sv("nx-tk", a); draw();
+        if (!adm) { var tid = sel; setTimeout(function () { var b = TK(); b.forEach(function (x) { if (x.id === tid && !cl(x) && last(x).w === "c") x.m.push({ w: "a", t: "Terima kasih, pesanmu sudah kami terima. Tim NEXORA akan segera membalas. (balasan otomatis demo)", d: "Baru saja", h: hm() }); if (x.id === tid && !cl(x) && last(x).w === "a") nt(x, "tk", "Balasan baru · " + x.id, "Admin: Terima kasih, pesanmu sudah kami terima."); }); sv("nx-tk", b); remote(); }, 3500); }
         return;
       }
       if (f.id === "f-prof") { ss("nx-name", f.nama.value.trim()); var P2 = ld("nx-prof", {}); P2.discord = f.dc.value.trim(); P2.wa = f.wa.value.trim(); sv("nx-prof", P2); $("#who").textContent = me(); toast("Profil tersimpan"); return draw(); }
       if (f.id === "f-buka") {
         if (actCount() >= MAXT) return limitModal();
         var b = TK(), id = "T-" + (1044 + b.length), k = f.kat.value, p = k === "Order baru" ? f.paket.value : "-";
-        b.unshift({ id: id, subj: f.subj.value || ("Order " + p), kat: k, paket: p, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: f.msg.value, d: "Baru saja" }] }); sv("nx-tk", b);
+        b.unshift({ id: id, subj: f.subj.value || ("Order " + p), kat: k, paket: p, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: f.msg.value, d: "Baru saja", h: hm() }] }); sv("nx-tk", b);
         if (k === "Order baru") { var o = OR(); o.unshift({ id: "ORD-" + (2045 + o.length), tk: id, item: p, jenis: "Order via ticket", tgl: "Hari ini", st: "Menunggu" }); sv("nx-or", o); }
         sel = id; tg = "aktif"; tab = "tiket"; draw(); toast("Ticket " + id + " dibuat. Nanti notifikasi otomatis masuk ke Discord NEXORA.");
       }
     });
-    window.addEventListener("storage", function (ev) { if (ev.key === "nx-tk" || ev.key === "nx-or" || ev.key === "nx-bill") remote(); });
+    window.addEventListener("storage", function (ev) { if (ev.key === "nx-tk" || ev.key === "nx-or" || ev.key === "nx-bill" || ev.key === "nx-notif") remote(); });
     draw();
   }
 

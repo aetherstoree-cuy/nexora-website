@@ -773,9 +773,27 @@ function pasangProgress() {
 }
 function pasangToc() {
   pasangProgress();
-  const links = [].slice.call(document.querySelectorAll(".legal-toc a")); if (!links.length || !("IntersectionObserver" in window)) return;
-  const io = new IntersectionObserver(function (es) {
-    es.forEach(function (e) { if (e.isIntersecting) links.forEach(function (l) { l.setAttribute("aria-current", String(l.getAttribute("href") === "#" + e.target.id)); }); });
-  }, { rootMargin: "-20% 0px -70% 0px" });
-  links.forEach(function (l) { const t = document.getElementById(l.getAttribute("href").slice(1)); if (t) io.observe(t); });
+  const links = [].slice.call(document.querySelectorAll(".legal-toc a")); if (!links.length) return;
+  const toc = document.querySelector(".legal-toc"), ol = toc.querySelector("ol"), secs = links.map(function (l) { return document.getElementById(l.getAttribute("href").slice(1)); }).filter(Boolean);
+  function aktif(id) {
+    links.forEach(function (l) { const on = l.getAttribute("href") === "#" + id; l.setAttribute("aria-current", String(on)); if (on && ol.scrollWidth > ol.clientWidth) { const x = l.offsetLeft - (ol.clientWidth - l.offsetWidth) / 2; ol.scrollTo({ left: Math.max(0, x), behavior: "smooth" }); } });
+  }
+  function spy() {
+    const tb = document.querySelector(".topbar"), off = (tb ? tb.offsetHeight : 0) + (toc.offsetHeight < 120 ? toc.offsetHeight : 0) + 24; let cur = secs[0];
+    secs.forEach(function (s) { if (s.getBoundingClientRect().top - off <= 0) cur = s; });
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) cur = secs[secs.length - 1];
+    if (cur && cur.id !== spy.last) { spy.last = cur.id; aktif(cur.id); }
+  }
+  function ukurToc() {
+    const tb = document.querySelector(".topbar"); if (!tb) return;
+    document.documentElement.style.setProperty("--tbh", tb.offsetHeight + "px");
+    document.documentElement.style.setProperty("--toch", (toc.offsetHeight < 120 ? toc.offsetHeight : 0) + "px");
+  }
+  window.addEventListener("scroll", spy, { passive: true }); window.addEventListener("resize", function () { ukurToc(); spy(); });
+  links.forEach(function (l) { l.addEventListener("click", function (ev) {
+    const t = document.getElementById(l.getAttribute("href").slice(1)); if (!t) return; ev.preventDefault();
+    const tb = document.querySelector(".topbar"), off = (tb ? tb.offsetHeight : 0) + (toc.offsetHeight < 120 ? toc.offsetHeight : 0) + 12;
+    window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - off, behavior: "smooth" }); history.replaceState(null, "", l.getAttribute("href"));
+  }); });
+  ukurToc(); spy();
 }
