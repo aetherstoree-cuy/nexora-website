@@ -15,8 +15,7 @@ body:has(.dash) .topbar{border-bottom-color:var(--line)}
 .dmain .sub{margin:4px 0 16px}
 .dmain h2{font-size:1.1rem;margin:24px 0 12px}
 .dpanel[hidden]{display:none}
-.dpanel{animation:pin .25s ease}
-@keyframes pin{from{opacity:0;translate:0 6px}}
+
 .dstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
 .dcard,.dstat,.th{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:20px;box-shadow:0 14px 30px -26px rgba(60,40,120,.45)}
 .dstat{display:flex;align-items:center;gap:14px}
@@ -1127,3 +1126,77 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 .cc-b .li .bd{flex:none;font-size:.74rem;padding:2px 9px}
 .cc-b{padding:0 14px 16px}
 @media (max-width:560px){.hero-c .btn,.hc-a .btn{padding:9px 16px;font-size:.9rem}}
+
+
+/* =====================================================================
+   v12: jarak chat, akun customer, animasi masuk dashboard
+   ===================================================================== */
+.th-m{gap:0}
+.row{margin-top:5px}
+.row.first{margin-top:16px}
+.row .col{gap:0}
+.bub{padding:8px 12px 7px;line-height:1.5}
+.sys{margin:14px 0 6px}
+
+.cu-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border:1px solid var(--accent);border-radius:99px;background:var(--accent-soft);color:var(--text);font:inherit;font-size:.78rem;cursor:pointer}
+.cu-chip i{color:var(--accent)}
+.cu-chip:hover{background:var(--accent);color:var(--on-accent)}.cu-chip:hover i{color:inherit}
+.cu-sb{flex:1;max-width:360px}
+.cu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px}
+.cu-c{display:flex;flex-direction:column;gap:14px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);transition:border-color .2s,box-shadow .2s}
+.cu-c:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:0 18px 30px -26px rgba(60,40,120,.6)}
+.cu-ch{display:flex;align-items:center;gap:12px;min-width:0}
+.cu-ch>div{flex:1;min-width:0}
+.cu-ch b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cu-ch small{color:var(--muted);font-size:.8rem}
+.cu-ch .av{width:42px;height:42px}
+.cu-ls{display:grid;gap:8px;margin:0;padding:12px 0 0;list-style:none;border-top:1px dashed var(--line);font-size:.9rem}
+.cu-ls li{display:flex;gap:10px;align-items:center;min-width:0}
+.cu-ls i{flex:none;color:var(--accent);width:18px;text-align:center}
+.cu-ls span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cu-none{color:var(--muted);font-style:italic;font-size:.85rem}
+.cu-ca{display:flex;gap:8px;margin-top:auto}
+.cu-ca .btn{flex:1;display:inline-flex;justify-content:center;align-items:center;gap:7px;padding:9px 10px;font-size:.88rem}
+.mbox.cu-m{width:min(520px,100%)}
+.cu-h{display:flex;align-items:center;gap:12px;min-width:0}
+.cu-h .av{width:44px;height:44px;font-size:1.1rem}
+.cu-h b{display:block}.cu-h small{color:var(--muted)}
+.cu-m .mb{display:grid;gap:14px;padding:16px 18px}
+.cu-st{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cu-st>div{padding:12px;border-radius:14px;background:linear-gradient(130deg,var(--accent-soft),var(--bg));text-align:center}
+.cu-st b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:1.5rem;line-height:1.1}
+.cu-st small{color:var(--muted);font-size:.76rem}
+.cu-list{display:grid;gap:4px}
+.cu-r{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px dashed var(--line)}
+.cu-r:first-child{border-top:0;padding-top:0}
+.cu-i{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:11px;background:var(--accent-soft);color:var(--accent)}
+.cu-v{flex:1;min-width:0}
+.cu-v small{display:block;color:var(--muted);font-size:.76rem}
+.cu-v b{display:block;font-weight:500;overflow-wrap:anywhere}
+.cu-r .ib{flex:none}
+.cu-note{display:flex;gap:8px;margin:10px 0 0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,#f59e0b 10%,var(--surface));font-size:.84rem;color:var(--muted)}
+.cu-note i{color:#d98a00;margin-top:2px}
+.cu-f{gap:10px}
+.cu-f .btn{display:inline-flex;align-items:center;gap:7px;text-decoration:none}
+.cu-f .btn[disabled]{opacity:.5;cursor:not-allowed}
+@media (max-width:560px){
+  .modal:has(.mbox.cu-m){place-items:end center;padding:0}
+  .mbox.cu-m{width:100%;border-radius:20px 20px 0 0;max-height:94dvh}
+  .cu-f{display:grid;grid-template-columns:1fr 1fr}.cu-f .btn{justify-content:center;padding:10px 8px;font-size:.86rem}
+  .row.first{margin-top:14px}
+}
+
+/* animasi masuk dashboard (halus, tidak berulang saat klik di dalam halaman) */
+@keyframes dsin{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:none}}
+@keyframes dfade{from{opacity:0}to{opacity:1}}
+@keyframes ddrop{from{opacity:0;transform:translate3d(0,-10px,0)}to{opacity:1;transform:none}}
+.dash>.topbar{animation:ddrop .7s cubic-bezier(.22,1,.36,1) both}
+.dash>.side,.dash>.dmain>#ptitle,.dash>.dmain>#psub{animation:dfade .8s cubic-bezier(.22,1,.36,1) both .1s}
+.dpanel.enter>*{animation:dsin .7s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--n,0)*60ms + 80ms)}
+.dpanel.enter>*:nth-child(1){--n:0}.dpanel.enter>*:nth-child(2){--n:1}.dpanel.enter>*:nth-child(3){--n:2}.dpanel.enter>*:nth-child(4){--n:3}.dpanel.enter>*:nth-child(5){--n:4}.dpanel.enter>*:nth-child(n+6){--n:5}
+@media (prefers-reduced-motion:reduce){.dash>.topbar,.dash>.side,.dpanel.enter>*{animation:none}}
+/* judul ticket tidak terpotong saat aksi banyak */
+.tk.adm .th-h{flex-wrap:wrap}
+.tk.adm .th-t{flex:1 1 160px;min-width:0}
+.tk.adm .th-t b{white-space:normal;overflow-wrap:anywhere}
+.tk.adm .th-a{flex-wrap:wrap}

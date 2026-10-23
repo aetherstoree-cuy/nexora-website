@@ -700,6 +700,7 @@ document.addEventListener("DOMContentLoaded", function () {
   pasangKontak();
   pasangKontakPage();
   pasangToc();
+  pasangReveal();
   pasangAkun();
   isiMulai();
   pasangQr();
@@ -770,6 +771,23 @@ function pasangProgress() {
     p.style.width = (tot > 0 ? done / tot * 100 : 100) + "%";
   }
   window.addEventListener("scroll", ukur, { passive: true }); window.addEventListener("resize", ukur); ukur();
+}
+function pasangReveal() {
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const els = [].slice.call(document.querySelectorAll(".eyebrow,.hero-copy h1,.hero-copy p,.hero-copy .actions,.hero-chips,.hero-visual,.page-head h1,.page-head p,.stats,.tabs,.toolbar,.tab-desc,section>.wrap>h2,section>.wrap>.lead,.plug,.flow-tabs,.flow,.svc,.faq,.cta-card,.note,.site-footer")), vh = window.innerHeight; let n = 0;
+  const io = new IntersectionObserver(function (es) {
+    es.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("rv-in"); io.unobserve(en.target); } });
+  }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+  els.forEach(function (el) {
+    if (el.getBoundingClientRect().top < vh * 0.92) return;
+    el.style.setProperty("--rd", String(n++ % 3)); el.classList.add("rv-wait"); io.observe(el);
+  });
+  let tick = false;
+  function lewat() {
+    tick = false;
+    [].slice.call(document.querySelectorAll(".rv-wait:not(.rv-in)")).forEach(function (el) { if (el.getBoundingClientRect().top < window.innerHeight * 0.9) { el.classList.add("rv-in"); io.unobserve(el); } });
+  }
+  window.addEventListener("scroll", function () { if (!tick) { tick = true; requestAnimationFrame(lewat); } }, { passive: true });
 }
 function pasangToc() {
   pasangProgress();
