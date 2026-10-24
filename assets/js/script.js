@@ -257,11 +257,14 @@ const ALUR = {
         ["me", "Aku mau pasang plugin untuk server survival, sekitar 20 pemain."],
         ["us", "Hallo kak, pesananmu sudah kami terima. Kami cek detailnya dulu yaa."]
       ] } },
-    { j: "Terima tagihan dan bayar", d: "Admin mengirim tagihan dengan harga akhir. Transfer sesuai petunjuk, lalu kirim bukti bayarnya di ticket.",
-      v: "chat", x: { cap: "T-1044 \u00b7 Menunggu pembayaran", m: [
-        ["us", "Tagihan Plugin Minecraft Rp 10.000 sudah kami kirim yaa. Silakan transfer lalu kirim buktinya di sini."],
-        ["me", "Sudah aku transfer, ini bukti transfernya."],
-        ["us", "Terima kasih, pembayaran sudah kami konfirmasi."]
+    { j: "Tagihan masuk di dashboard", d: "Admin mengirim tagihan dengan harga akhir. Tagihan muncul di tab Tagihan dan kamu dapat notifikasi.",
+      v: "bill" },
+    { j: "Klik Bayar sekarang", d: "Transfer tepat sesuai nominal ke rekening atau e-wallet NEXORA yang tampil di sana. Tulis kode tagihan di catatan transfer.",
+      v: "bayar" },
+    { j: "Kirim bukti, tunggu konfirmasi", d: "Klik Saya sudah bayar, lalu kirim bukti transfer di ticket. Admin mengecek dan status berubah jadi Pembayaran Dikonfirmasi.",
+      v: "chat", x: { cap: "T-1044 \u00b7 Pembayaran Dikonfirmasi", m: [
+        ["me", "Sudah aku transfer ya min, ini bukti transfernya."],
+        ["us", "Terima kasih, pembayaran INV-1002 sudah kami konfirmasi. Pesananmu segera kami proses."]
       ] } },
     { j: "Pesanan diproses", d: "Setelah pembayaran dikonfirmasi, admin mengerjakan pesananmu. Perkembangannya bisa kamu pantau dari ticket.",
       v: "progres", x: { cap: "T-1044 \u00b7 Pesanan diproses" } },
@@ -279,6 +282,15 @@ function panelAlur(s) {
     return daftar.map(function (u, i) {
       return '<div class="fb-task ' + (i < selesai ? "done" : "now") + '"' + k(i + 2) + "><i></i>" + u + "</div>";
     }).join("");
+  }
+  if (s.v === "bill") {
+    return '<div class="fb-cap"' + k(0) + '>Tagihan <b>1 aktif</b></div><div class="fm-bill"' + k(1) + '><div class="fb-h"><div><b>Plugin Minecraft</b><small>INV-1002 \u00b7 Bill order</small></div><span class="fm-bd">Belum dibayar</span></div><div class="fm-amt"><small>Total tagihan</small><b>Rp 10.000</b></div><div class="fm-mt"><span>Jatuh tempo 25 Okt 2026</span><span>Sisa 3 hari</span></div><div class="fm-btns"><span class="fm-b on">Bayar sekarang</span><span class="fm-b">Lihat ticket T-1044</span></div></div>';
+  }
+  if (s.v === "bayar") {
+    return '<div class="fb-cap"' + k(0) + '>Bayar tagihan <b>INV-1002</b></div><div class="fm-tot"' + k(1) + '><small>Total yang harus ditransfer</small><div><b>Rp 10.000</b><span>Salin nominal</span></div></div>' +
+      '<div class="fm-acc"' + k(2) + '><span class="fm-ai">B</span><div><small>Bank \u00b7 BCA</small><b>1234 5678 90</b><small>a.n. NEXORA</small></div><span class="fm-cp">Salin</span></div>' +
+      '<div class="fm-acc"' + k(3) + '><span class="fm-ai w">D</span><div><small>E-wallet \u00b7 Dana</small><b>0812 3456 7890</b><small>a.n. NEXORA</small></div><span class="fm-cp">Salin</span></div>' +
+      '<div class="fb-cta"' + k(4) + '>Saya sudah bayar</div>';
   }
   if (s.v === "login") {
     return '<div class="fb-cap"' + k(0) + ">Akun NEXORA</div>" +

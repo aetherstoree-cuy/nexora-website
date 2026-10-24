@@ -21,6 +21,20 @@
   function bd(s, short) { return '<span class="bd ' + (BC[s] || "b1") + '">' + e(short && SHORT[s] ? SHORT[s] : s) + "</span>"; }
   var MAXT = 3;
   function me() { return ss("nx-name") || "Customer"; }
+  var ROLES = ["Founder", "Co-Founder", "Teknisi"];
+  var PERM = {
+    Founder: ["ringkasan", "tiket", "tagihan", "customer", "jasa", "hosting", "tampilan", "kontak", "bayar", "ekspor", "tim"],
+    "Co-Founder": ["ringkasan", "tiket", "tagihan", "customer", "jasa", "hosting", "tampilan", "kontak", "bayar", "ekspor"],
+    Teknisi: ["ringkasan", "tiket", "tagihan"]
+  };
+  var RC = { Founder: "b8", "Co-Founder": "b2", Teknisi: "b7" };
+  function STAFF() { return ld("nx-staff", []); }
+  function staffBy(em) { em = String(em || "").toLowerCase(); return STAFF().filter(function (x) { return x.email === em; })[0]; }
+  function arole() { return ss("nx-arole") || ""; }
+  function can(t) { return (PERM[arole()] || []).indexOf(t) > -1; }
+  function rbd(r) { return '<span class="bd ' + (RC[r] || "b6") + '">' + e(r) + "</span>"; }
+  function whoR() { return arole() ? arole() + " - " + me() : me(); }
+  function nmOf(em) { return String(em).split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, function (c) { return c.toUpperCase(); }) || "Admin"; }
   function hm() { var d = new Date(); return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); }
   function ptime(id, i) { var n = 0; for (var k = 0; k < id.length; k++) n = (n * 31 + id.charCodeAt(k)) % 997; n = (n + i * 137) % 720; return ("0" + (8 + Math.floor(n / 60))).slice(-2) + ":" + ("0" + (n % 60)).slice(-2); }
   function dayL(m) { return m.d === "Baru saja" || m.d === "Hari ini" ? "Hari ini" : m.d; }
@@ -60,7 +74,7 @@
 
   function authInit(mode, root) {
     var forms = $$("form", root);
-    function masuk(n, em, via) { ss("nx-via", via || "email"); ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); go(mode === "alogin" ? "nexora-admin.html" : "dashboard.html"); }
+    function masuk(n, em, via) { ss("nx-via", via || "email"); ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); if (mode !== "alogin") ss("nx-arole", ""); go(mode === "alogin" ? "nexora-admin.html" : "dashboard.html"); }
     if (location.hash === "#daftar") setTimeout(function () { var d = $('[data-m="daftar"]', root); if (d) d.click(); }, 0);
     $$("[data-m]", root).forEach(function (b) { b.addEventListener("click", function () {
       $$("[data-m]", root).forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
@@ -78,12 +92,19 @@
         var msg = f.password.value.length < 8 ? "Password minimal 8 karakter." : f.password.value !== f.ulang.value ? "Password dan ulangi password tidak sama." : "";
         if (msg) { er.textContent = msg; er.hidden = false; return; }
       }
+      if (mode === "alogin") {
+        var em = f.email.value.trim().toLowerCase(), S = STAFF();
+        if (!S.length) { S.push({ id: "s" + Date.now(), nama: nmOf(em), email: em, role: "Founder", dibuat: Date.now() }); sv("nx-staff", S); }
+        var u = S.filter(function (x) { return x.email === em; })[0];
+        if (!u) { er.textContent = "Email ini belum terdaftar sebagai tim NEXORA. Minta Founder menambahkan akunmu dan rolenya."; er.hidden = false; return; }
+        ss("nx-arole", u.role); return masuk(u.nama, em);
+      }
       masuk((f.nama && f.nama.value) || f.email.value.split("@")[0], f.email.value);
     }); });
   }
 
   function dashInit(adm, root) {
-    var ctab = "aktif", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", of = "semua", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", hcat = {}, cq = "";
+    var ctab = "aktif", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", of = "semua", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
     var scrim = document.createElement("div"); scrim.className = "side-scrim"; document.body.appendChild(scrim);
     function isMob() { return window.matchMedia("(max-width:820px)").matches; }
     function syncT() {
@@ -101,14 +122,22 @@
       side.insertBefore(sh, side.firstChild); sh.appendChild(lg); sh.appendChild(sx);
       var sn = document.createElement("div"); sn.className = "side-nav"; var sf = document.createElement("div"); sf.className = "side-foot";
       [].slice.call(side.children).forEach(function (x) { if (x === sh || x === st || x.classList.contains("who")) return; (x.classList.contains("home") || x.id === "logout" ? sf : sn).appendChild(x); });
-      if (adm) { var ct = $('[data-tab="customer"]', sn); if (ct) sn.appendChild(ct); }
+      if (adm) {
+        var sls = $$(".sl", sn); if (sls[1]) sls[1].remove();
+        [["Katalog", "tags", ["jasa", "hosting"]], ["Situs", "window-stack", ["tampilan", "kontak", "bayar"]], ["Sistem", "gear", ["tim", "ekspor"]]].forEach(function (g) {
+          var w = document.createElement("div"); w.className = "sg"; w.dataset.g = g[0];
+          w.innerHTML = '<button type="button" class="sgh" aria-expanded="false"><i class="bi bi-' + g[1] + ' sgi"></i><span class="sgt">' + g[0] + '</span><i class="bi bi-chevron-down sgc"></i></button><div class="sgb"><div class="sgx"></div></div>';
+          g[2].forEach(function (k) { var b = $('[data-tab="' + k + '"]', sn); if (b) $(".sgx", w).appendChild(b); });
+          sn.appendChild(w);
+        });
+      }
       side.appendChild(sn); side.appendChild(sf);
       var tl = document.createElement("div"); tl.className = "tb-l"; tl.appendChild(st);
       var dl = document.createElement("span"); dl.className = "tb-sub"; dl.textContent = adm ? "Dashboard Admin" : "Dashboard"; tl.appendChild(dl);
       w.insertBefore(tl, nr); root.insertBefore(hd, $(".dmain", root));
       var un = ss("nx-name") || (adm ? "Admin" : "Customer"), em = ss("nx-email") || "-";
       var uw = document.createElement("div"); uw.className = "uwrap";
-      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false"><span class="av"><i class="bi bi-person-fill"></i></span><span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="um-i"><span class="av um-av">' + e(un.charAt(0).toUpperCase()) + '</span><div class="um-n"><b>' + e(un) + '</b><small><i class="bi bi-envelope"></i>' + e(em) + '</small></div></div><div class="um-sep"></div>' + (adm ? "" : '<button type="button" class="um-a" data-tab="profile"><i class="bi bi-person"></i> Profile saya</button>') + '<button type="button" class="um-o"><i class="bi bi-box-arrow-right"></i> Logout</button></div>';
+      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false"><span class="av"><i class="bi bi-person-fill"></i></span><span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="um-i"><span class="av um-av">' + e(un.charAt(0).toUpperCase()) + '</span><div class="um-n"><b>' + e(un) + '</b>' + (adm && arole() ? '<span class="um-r">' + rbd(arole()) + '</span>' : '') + '<small><i class="bi bi-envelope"></i>' + e(em) + '</small></div></div><div class="um-sep"></div>' + (adm ? "" : '<button type="button" class="um-a" data-tab="profile"><i class="bi bi-person"></i> Profile saya</button>') + '<button type="button" class="um-o"><i class="bi bi-box-arrow-right"></i> Logout</button></div>';
       nr.appendChild(uw);
       if (!adm) {
         var nw = document.createElement("div"); nw.className = "nwrap";
@@ -156,7 +185,7 @@
       window.addEventListener("resize", function () { if (!isMob()) root.classList.remove("open"), scrim.classList.remove("on"); syncT(); });
       syncT();
     })();
-    function out() { ss("nx-role", ""); go(adm ? "nexora-admin-access.html" : "masuk.html"); }
+    function out() { ss("nx-role", ""); ss("nx-arole", ""); go(adm ? "nexora-admin-access.html" : "masuk.html"); }
     function outAsk() {
       modal('<div class="mbox sm warn" role="alertdialog" aria-modal="true" aria-labelledby="lo-t"><span class="warn-ic"><i class="bi bi-box-arrow-right"></i></span><div class="mb"><h3 id="lo-t">Keluar dari akun?</h3><p>Apakah kamu yakin ingin keluar dari akun?</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn dng" data-ok>Ya, keluar</button></div></div>', function (m, close) {
         $("[data-ok]", m).addEventListener("click", out);
@@ -167,7 +196,7 @@
     function tb() { var h = $(".topbar"); if (h) document.documentElement.style.setProperty("--tb", h.offsetHeight + "px"); }
     tb(); window.addEventListener("resize", tb);
     window.__nxAdm = adm; if (!adm) { sv("nx-cust", me()); var UU = USR(), pp = ld("nx-prof", {}), nu = UU[me()] || {}; nu.email = ss("nx-email") || nu.email || ""; nu.discord = pp.discord || nu.discord || ""; nu.wa = pp.wa || nu.wa || ""; nu.joined = nu.joined || new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }); UU[me()] = nu; sv("nx-users", UU); }
-    $("#who").textContent = ss("nx-name") || (adm ? "Admin" : "Customer"); var wv = $("#wav"); if (wv) wv.textContent = me().charAt(0).toUpperCase();
+    $("#who").textContent = ss("nx-name") || (adm ? "Admin" : "Customer"); var wv = $("#wav"); if (wv) wv.textContent = me().charAt(0).toUpperCase(); applyPerms();
     function mine() { return TK().filter(function (x) { return x.user === "__me" || x.user === me(); }); }
     function last(t) { return t.m[t.m.length - 1]; }
     function USR() {
@@ -254,7 +283,7 @@
         if (m.w === "s") { prev = ""; return '<div class="sys">' + e(m.t) + " · " + e(dayL(m)) + ", " + tm + "</div>"; }
         var dv = ""; if (dayL(m) !== pd) { pd = dayL(m); dv = '<div class="sys day">' + e(pd) + "</div>"; prev = ""; }
         var first = m.w !== prev, mn = m.w === mineW; prev = m.w;
-        var who = m.w === "a" ? "Admin" + (m.n ? " - " + m.n : "") : uname(t), nc = m.w === "a" ? "var(--accent)" : ncol(who);
+        var who = m.w === "a" ? (m.r || "Admin") + (m.n ? " - " + m.n : "") : uname(t), nc = m.w === "a" ? "var(--accent)" : ncol(who);
         return dv + '<div class="row ' + (mn ? "me" : "ot") + (first ? " first" : "") + '">' + (mn ? "" : first ? (m.w === "a" ? '<span class="av nx"><i class="bi bi-box2"></i></span>' : av(uname(t))) : '<span class="av gh"></span>') + '<div class="col"><div class="bub"><span class="bn" style="--nc:' + nc + '">' + e(who) + (mn && !adm ? " · kamu" : "") + "</span>" + e(m.t) + "<time>" + tm + "</time></div></div></div>";
       }).join("") + (closed && last(t).w !== "s" ? '<div class="sys">Ticket ditutup</div>' : "");
       var si = ST.indexOf(t.st), nmsg = t.m.filter(function (m) { return m.w !== "s"; }).length;
@@ -277,17 +306,33 @@
         return '<button class="tk-item cti" data-id="' + x.id + '" aria-current="' + (x.id === sel) + '"><span class="ct-ic"><i class="bi bi-' + (x.kat === "Order baru" ? "receipt" : x.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span><span class="ti"><b>' + (l.w === "a" ? '<i class="dot" title="Ada balasan admin"></i>' : "") + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(x.kat) + (x.paket !== "-" ? " · " + e(x.paket) : "") + '</small><span class="pv">' + who + e(l.t) + '</span></span><span class="tr"><small>' + e(l.d) + "</small>" + bd(x.st, 1) + "</span></button>";
       }).join("") || '<p class="muted pad">Tidak ada ticket yang cocok.</p>';
     }
+    function histItems() {
+      var q = aq.toLowerCase(), cT = mine().filter(function (x) { return cl(x); }), cids = cT.map(function (x) { return x.id; });
+      var mt = mine().map(function (x) { return x.id; });
+      var tkIt = cT.map(function (x) { return { k: x.id, t: x, o: OR().filter(function (r) { return r.tk === x.id; })[0] }; });
+      var orIt = OR().filter(function (r) { return cids.indexOf(r.tk) < 0 && (!r.tk || mt.indexOf(r.tk) > -1); }).map(function (r) { return { k: r.id, o: r }; });
+      return orIt.concat(tkIt).filter(function (it) { var tx = it.t ? it.t.subj + " " + it.t.id + " " + it.t.paket + " " + it.t.kat : it.o.item + " " + it.o.id + " " + it.o.jenis; return tx.toLowerCase().indexOf(q) > -1; });
+    }
     function histList() {
-      var q = aq.toLowerCase();
-      var a = mine().filter(function (x) { return cl(x) && (x.subj + " " + x.id + " " + x.paket + " " + x.kat).toLowerCase().indexOf(q) > -1; });
-      return a.map(function (x) { var l = last(x); return '<button class="tk-item" data-id="' + x.id + '" aria-current="' + (x.id === sel) + '"><span class="hs-ic"><i class="bi bi-check2-circle"></i></span><span class="ti"><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(x.kat) + (x.paket !== "-" ? " · " + e(x.paket) : "") + '</small><span class="pv">' + e(l.t) + '</span></span><span class="tr"><small>' + e(x.tgl) + "</small>" + bd(x.st) + "</span></button>"; }).join("") || '<p class="muted pad">Tidak ada riwayat yang cocok.</p>';
+      return histItems().map(function (it) {
+        if (it.t) { var x = it.t, l = last(x); return '<button class="tk-item" data-id="' + x.id + '" aria-current="' + (x.id === sel) + '"><span class="hs-ic"><i class="bi bi-check2-circle"></i></span><span class="ti"><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(x.kat) + (x.paket !== "-" ? " · " + e(x.paket) : "") + '</small><span class="pv">' + e(l.t) + '</span></span><span class="tr"><small>' + e(x.tgl) + "</small>" + bd(x.st) + "</span></button>"; }
+        var r = it.o; return '<button class="tk-item" data-id="' + r.id + '" aria-current="' + (r.id === sel) + '"><span class="hs-ic run"><i class="bi bi-receipt"></i></span><span class="ti"><b>' + e(r.item) + "</b><small>" + e(r.id) + " · " + e(r.jenis) + '</small><span class="pv">Pesanan ' + (r.st === "Selesai" ? "selesai" : "sedang berjalan") + '</span></span><span class="tr"><small>' + e(r.tgl) + "</small>" + bd(r.st) + "</span></button>";
+      }).join("") || '<p class="muted pad">Tidak ada riwayat yang cocok.</p>';
+    }
+    function ordDetail(r) {
+      var steps = ["Menunggu", "Diproses", "Selesai"], k = steps.indexOf(r.st === "Menunggu pembayaran" ? "Menunggu" : r.st), t = r.tk ? TK().filter(function (x) { return x.id === r.tk; })[0] : null;
+      return '<div class="dcard od"><div class="od-h"><button class="ib bk-b" type="button" data-back aria-label="Kembali"><i class="bi bi-chevron-left"></i></button><span class="th-ic"><i class="bi bi-receipt"></i></span><div class="th-t"><b>' + e(r.item) + "</b><small>" + e(r.id) + " · " + e(r.jenis) + " · " + e(r.tgl) + "</small></div>" + bd(r.st) + '</div><div class="stp">' + steps.map(function (s2, i) { return '<span class="' + (i <= k ? "on" : "") + '"><i></i>' + s2 + "</span>"; }).join("") + "</div>" +
+        (t ? '<p class="muted">Pesanan ini masih berjalan lewat ticket <b>' + e(t.id) + '</b>. Percakapannya akan masuk ke riwayat setelah ticket ditutup admin.</p><button class="btn" type="button" data-gt="' + e(t.id) + '"><i class="bi bi-chat-dots"></i> Buka ticket</button>' : '<p class="muted">Pesanan ini tidak punya ticket aktif.</p>') + "</div>";
     }
     function histPanel() {
-      var all = mine().filter(function (x) { return cl(x); });
-      if (!all.length) return '<div class="dcard empty"><i class="bi bi-clock-history"></i><b>Belum ada riwayat ticket</b><p class="muted">Ticket yang ditutup admin akan masuk ke sini.</p></div>';
-      if (!all.some(function (x) { return x.id === sel; })) sel = null;
-      var t = all.filter(function (x) { return x.id === sel; })[0];
-      return '<div class="tk adm hs ' + (sel ? tv : "list") + '"><div class="tk-side"><div class="tk-tools"><label class="sbox"><i class="bi bi-search"></i><input class="inp" data-q type="search" placeholder="Cari riwayat ticket…" value="' + e(aq) + '"></label><div class="hs-cnt"><i class="bi bi-clock-history"></i> ' + all.length + ' ticket selesai</div></div><div class="tk-list">' + histList() + '</div></div><div class="tk-chat">' + (t ? thread(t, true) : '<div class="dcard empty"><i class="bi bi-clock-history"></i><b>Pilih ticket</b><p class="muted">Pilih ticket di kiri untuk membaca percakapannya.</p></div>') + "</div></div>";
+      var all = histItems();
+      var cnt = mine().filter(function (x) { return cl(x); }).length + OR().filter(function (r) { return !mine().some(function (x) { return x.id === r.tk && cl(x); }); }).length;
+      if (!cnt) return '<div class="dcard empty"><i class="bi bi-clock-history"></i><b>Belum ada riwayat</b><p class="muted">Pesananmu dan percakapan ticket yang sudah ditutup akan muncul di sini.</p></div>';
+      if (!all.some(function (it) { return it.k === sel; })) sel = null;
+      var cur = all.filter(function (it) { return it.k === sel; })[0], det;
+      if (!cur) det = '<div class="dcard empty"><i class="bi bi-clock-history"></i><b>Pilih riwayat</b><p class="muted">Pilih pesanan di kiri untuk melihat perkembangan atau percakapan ticketnya.</p></div>';
+      else det = cur.t ? thread(cur.t, true) : ordDetail(cur.o);
+      return '<div class="tk adm hs ' + (sel ? tv : "list") + '"><div class="tk-side"><div class="tk-tools"><label class="sbox"><i class="bi bi-search"></i><input class="inp" data-q type="search" placeholder="Cari riwayat pesanan…" value="' + e(aq) + '"></label><div class="hs-cnt"><i class="bi bi-clock-history"></i> ' + cnt + ' riwayat</div></div><div class="tk-list">' + histList() + '</div></div><div class="tk-chat">' + det + "</div></div>";
     }
     function tkPanel() {
       if (!adm) {
@@ -330,9 +375,10 @@
     }
     function pcBanner() {
       var c = PC(); if (c.n >= c.t) return "";
-      var pct = Math.round(c.n / c.t * 100), kurang = c.it.filter(function (x) { return !x[2]; });
-      return '<section class="pcb" aria-label="Kelengkapan akun"><div class="pcb-r" style="--p:' + pct + '"><b>' + c.n + "<small>/" + c.t + '</small></b></div><div class="pcb-t"><h3>Lengkapi akunmu</h3><p>' + (kurang.length === 1 ? "Tinggal 1 langkah lagi." : "Tinggal " + kurang.length + " langkah lagi.") + " Data lengkap bikin admin gampang menghubungimu soal order dan tagihan.</p><div class=\"pcb-c\">" +
-        c.it.map(function (x) { return '<span class="' + (x[2] ? "ok" : "") + '"><i class="bi bi-' + (x[2] ? "check-lg" : "plus-lg") + '"></i>' + x[1] + "</span>"; }).join("") + '</div></div><button type="button" class="btn" data-go="profile">Lengkapi sekarang <i class="bi bi-arrow-right"></i></button></section>';
+      var pct = Math.round(c.n / c.t * 100), kurang = c.it.filter(function (x) { return !x[2]; }).length;
+      return '<section class="pcb" aria-label="Kelengkapan akun"><div class="pcb-top"><div class="pcb-r" style="--p:' + pct + '"><b>' + c.n + "<small>/" + c.t + '</small></b></div><div class="pcb-t"><h3>Lengkapi akunmu</h3><p>' + (kurang === 1 ? "Tinggal 1 langkah lagi." : "Tinggal " + kurang + " langkah lagi.") + ' Data lengkap bikin admin gampang menghubungimu.</p></div><button type="button" class="btn pcb-b" data-go="profil">Lengkapi sekarang <i class="bi bi-arrow-right"></i></button></div>' +
+        '<div class="pcb-bar" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div>' +
+        '<ul class="pcb-l">' + c.it.map(function (x) { return '<li class="' + (x[2] ? "ok" : "") + '"><span class="pcb-ic"><i class="bi bi-' + x[0] + '"></i></span><span class="pcb-n"><b>' + x[1] + "</b><small>" + (x[2] ? "Sudah terisi" : "Belum diisi") + '</small></span><i class="bi bi-' + (x[2] ? "check-circle-fill" : "plus-circle") + ' pcb-s"></i></li>'; }).join("") + "</ul></section>";
     }
     function lkCard() {
       var k = LK(), row = function (key, ic, nm, on, sub) {
@@ -457,7 +503,7 @@
     function tampilan() {
       var T = ld("nx-tampilan", { nama: "NEXORA", discord: "https://discord.gg/7bFYCRheRm", hero: "Buat Server Minecraft Impianmu Bersama NEXORA.", sub: "Kami membantu menyiapkan server Minecraft, server Discord, dan hosting. Kamu tinggal fokus main dan membangun komunitas.", warna: "#7c5cff", logo: "" });
       var cols = ["#7c5cff", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#ec4899"];
-      $("#p-tampilan").innerHTML = '<div class="tmp"><div class="tcol"><div class="dcard"><b>Logo & nama</b><p class="muted">Tampil di navbar dan footer.</p><div class="nv-prev"><span class="lg" id="nvl">' + (T.logo ? '<img src="' + T.logo + '" alt="">' : '<i class="bi bi-box2"></i>') + '</span><b id="nvn">' + e(T.nama) + '</b></div>' + uplHTML(T) + '<label class="fld" style="margin-top:14px"><span>Nama situs</span><input class="inp" data-t="nama" value="' + e(T.nama) + '"></label></div><div class="dcard"><b>Warna aksen</b><p class="muted">Pilih warna utama tombol dan penanda.</p><div class="sws">' + cols.map(function (c) { return '<button type="button" class="sw" data-c="' + c + '" style="--c:' + c + '" aria-pressed="' + (c === T.warna) + '" aria-label="Warna ' + c + '"></button>'; }).join("") + '</div><div class="pvbox" id="pvb" style="--pv:' + T.warna + '"><span class="pb">Tombol contoh</span><span class="pg">Badge</span></div></div></div><div class="tcol">' + qrHTML() + '<div class="dcard"><b>Teks halaman utama</b><label class="fld" style="margin-top:12px"><span>Judul</span><input class="inp" data-t="hero" value="' + e(T.hero) + '"></label><label class="fld"><span>Deskripsi</span><textarea class="txa" data-t="sub">' + e(T.sub) + '</textarea></label><p class="hint tmp-dc"><i class="bi bi-discord"></i> Link Discord (tombol navbar, footer, dan halaman Kontak) diatur di tab <button type="button" class="lnk" data-tab="kontak">Kontak</button>.</p></div></div></div><div class="tmp-a"><button class="btn" id="sv-tmp">Simpan perubahan</button><button class="btn ghost" id="rs-tmp">Reset</button></div>';
+      $("#p-tampilan").innerHTML = '<div class="tmp"><div class="tcol"><div class="dcard"><b>Logo & nama</b><p class="muted">Tampil di navbar dan footer.</p><div class="nv-prev"><span class="lg" id="nvl">' + (T.logo ? '<img src="' + T.logo + '" alt="">' : '<i class="bi bi-box2"></i>') + '</span><b id="nvn">' + e(T.nama) + '</b></div>' + uplHTML(T) + '<label class="fld" style="margin-top:14px"><span>Nama situs</span><input class="inp" data-t="nama" value="' + e(T.nama) + '"></label></div><div class="dcard"><b>Warna aksen</b><p class="muted">Pilih warna utama tombol dan penanda.</p><div class="sws">' + cols.map(function (c) { return '<button type="button" class="sw" data-c="' + c + '" style="--c:' + c + '" aria-pressed="' + (c === T.warna) + '" aria-label="Warna ' + c + '"></button>'; }).join("") + '</div><div class="pvbox" id="pvb" style="--pv:' + T.warna + '"><span class="pb">Tombol contoh</span><span class="pg">Badge</span></div></div></div><div class="tcol">' + qrHTML() + '<div class="dcard"><b>Teks halaman utama</b><label class="fld" style="margin-top:12px"><span>Judul</span><input class="inp" data-t="hero" value="' + e(T.hero) + '"></label><label class="fld"><span>Deskripsi</span><textarea class="txa" data-t="sub">' + e(T.sub) + '</textarea></label><p class="hint tmp-dc"><i class="bi bi-discord"></i> Link Discord (tombol navbar, footer, dan halaman Kontak) diatur di tab <button type="button" class="tmp-lnk" data-tab="kontak">Kontak</button>.</p></div></div></div><div class="tmp-a"><button class="btn" id="sv-tmp">Simpan perubahan</button><button class="btn ghost" id="rs-tmp">Reset</button></div>';
       root._T = T;
     }
     /* ===== Tagihan ===== */
@@ -566,13 +612,13 @@
       var c = calc(), due = bDue(), bill = BF.jenis === "bill";
       guard({ title: "Kirim tagihan ke customer?", ok: "Kirim tagihan", html: srows([["Customer", uname(c.t)], ["Jenis", bill ? "Bill order" : "Hosting berkala"], ["Paket", c.t.paket], ["Siklus", bill ? "Sekali bayar" : BF.siklus]].concat(bill ? [["Keterangan", BF.ket.trim()]] : []).concat([["Total", rp(c.total)], ["Jatuh tempo", fdt(due)]])) + '<p class="muted">Setelah terkirim, tagihan tidak bisa diedit atau dihapus. Hanya bisa dibatalkan dengan alasan.</p>' }, function () {
         var all = BL(), n = all.reduce(function (m, b) { return Math.max(m, Number(b.id.slice(4)) || 0); }, 3000) + 1;
-        all.unshift({ id: "INV-" + n, jenis: BF.jenis, ket: bill ? BF.ket.trim() : "", tk: c.t.id, user: c.t.user, item: c.t.paket, siklus: bill ? "Sekali bayar" : BF.siklus, dasar: c.dasar, adj: bill ? "none" : BF.adj, pct: c.pct, alasan: bill ? "" : (BF.alasan || "").trim(), total: c.total, jatuh: due, st: "Belum dibayar", dibuat: iso(t0()), by: me(), ts: Date.now(), ticket: "", log: [{ a: "Tagihan dibuat dan dikirim ke customer", by: me(), at: stamp() }] });
+        all.unshift({ id: "INV-" + n, jenis: BF.jenis, ket: bill ? BF.ket.trim() : "", tk: c.t.id, user: c.t.user, item: c.t.paket, siklus: bill ? "Sekali bayar" : BF.siklus, dasar: c.dasar, adj: bill ? "none" : BF.adj, pct: c.pct, alasan: bill ? "" : (BF.alasan || "").trim(), total: c.total, jatuh: due, st: "Belum dibayar", dibuat: iso(t0()), by: whoR(), ts: Date.now(), ticket: "", log: [{ a: "Tagihan dibuat dan dikirim ke customer", by: whoR(), at: stamp() }] });
         sv("nx-bill", all); bnew = false; tkStat(c.t.id, "Menunggu pembayaran", "Tagihan INV-" + n + " dikirim · status: Menunggu pembayaran"); toast("Tagihan INV-" + n + " terkirim ke " + uname(c.t)); draw();
       });
     }
     function bUpd(id, st, aksi, r) {
       var all = BL(); all.forEach(function (b) {
-        if (b.id !== id) return; b.st = st; b.log.push({ a: aksi + (r ? ": " + r : ""), by: me(), at: stamp() });
+        if (b.id !== id) return; b.st = st; b.log.push({ a: aksi + (r ? ": " + r : ""), by: whoR(), at: stamp() });
         if (b.ticket) { var tk = TK(); tk.forEach(function (x) { if (x.id === b.ticket) x.m.push({ w: "s", t: "Tagihan " + id + (st === "Lunas" ? " ditandai lunas" : " dibatalkan"), d: "Baru saja", h: hm() }); }); sv("nx-tk", tk); }
       });
       var bb = all.filter(function (x) { return x.id === id; })[0], oth = bb && all.some(function (o) { return o.id !== id && o.tk === bb.tk && o.st === "Belum dibayar"; });
@@ -724,8 +770,42 @@
       if (op === "tgl") { a[i].aktif = a[i].aktif === false; sv(isK ? "nx-kontak" : "nx-bayar", a); return draw(); }
       if (op === "del") return modal('<div class="mbox sm"><div class="mh"><b>Hapus ' + (isK ? "kontak" : "rekening") + '?</b></div><div class="mb"><p>' + e(isK ? a[i].label : a[i].nama) + ' akan dihapus dan tidak tampil lagi.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn dng" data-ok>Hapus</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { a.splice(i, 1); sv(isK ? "nx-kontak" : "nx-bayar", a); close(); toast("Dihapus"); draw(); }); });
     }
-    var TITLES = { c: { ringkasan: ["Dashboard", ""], pesanan: ["Riwayat pesanan", "Semua pesanan dan perkembangannya."], tiket: ["Ticket saya", "Chat dengan tim NEXORA di ticket yang masih aktif."], riwayat: ["Riwayat ticket", "Ticket yang sudah ditutup. Hanya bisa dibaca."], tagihan: ["Tagihan", "Tagihan yang perlu kamu bayar beserta jatuh temponya."], buka: ["Buka ticket", "Order baru atau tanya sesuatu ke tim NEXORA."], profile: ["Profile", "Kelola data akunmu."] },
-      a: { ringkasan: ["Dashboard", "Kondisi ticket dan pesanan saat ini."], tiket: ["Ticket", "Lihat, balas, dan ubah status ticket customer."], tagihan: ["Tagihan", "Buat dan pantau tagihan customer dengan pengaman."], kontak: ["Kontak", "Atur kontak yang tampil di halaman Hubungi kami."], bayar: ["Pembayaran", "Rekening dan e-wallet untuk pembayaran bill order."], jasa: ["Jasa setup", "Kelola paket setup Minecraft dan Discord."], hosting: ["Hosting", "Kelola paket hosting."], tampilan: ["Logo & tampilan", "Atur logo, warna, dan teks website."], ekspor: ["Ekspor data", "Unduh cadangan ticket dan pesanan."], customer: ["Customer", "Data akun customer untuk menghubungi jika ada kendala."] } };
+    var TITLES = { c: { ringkasan: ["Dashboard", ""], pesanan: ["Riwayat pesanan", "Semua pesanan dan perkembangannya."], tiket: ["Ticket saya", "Chat dengan tim NEXORA di ticket yang masih aktif."], riwayat: ["Riwayat pesanan", "Pesanan dan percakapan ticket yang sudah selesai. Hanya bisa dibaca."], tagihan: ["Tagihan", "Tagihan yang perlu kamu bayar beserta jatuh temponya."], buka: ["Buka ticket", "Order baru atau tanya sesuatu ke tim NEXORA."], profile: ["Profile", "Kelola data akunmu."] },
+      a: { ringkasan: ["Dashboard", "Kondisi ticket dan pesanan saat ini."], tiket: ["Ticket", "Lihat, balas, dan ubah status ticket customer."], tagihan: ["Tagihan", "Buat dan pantau tagihan customer dengan pengaman."], kontak: ["Kontak", "Atur kontak yang tampil di halaman Hubungi kami."], bayar: ["Pembayaran", "Rekening dan e-wallet untuk pembayaran bill order."], jasa: ["Jasa setup", "Kelola paket setup Minecraft dan Discord."], hosting: ["Hosting", "Kelola paket hosting."], tampilan: ["Logo & tampilan", "Atur logo, warna, dan teks website."], ekspor: ["Ekspor data", "Unduh cadangan ticket dan pesanan."], customer: ["Customer", "Data akun customer untuk menghubungi jika ada kendala."], tim: ["Tim & role", "Atur siapa saja yang bisa masuk dashboard admin dan role-nya."] } };
+    var RDESC = { Founder: "Semua fitur dan satu-satunya yang bisa memberi atau mengubah role.", "Co-Founder": "Semua fitur dashboard admin, kecuali mengatur role.", Teknisi: "Dashboard, Ticket, dan Tagihan. Bisa membalas ticket dan membuat tagihan." };
+    var RICO = { Founder: "award", "Co-Founder": "stars", Teknisi: "tools" };
+    function timPanel() {
+      var S = STAFF(), meE = (ss("nx-email") || "").toLowerCase(), isF = arole() === "Founder";
+      var cntR = {}; S.forEach(function (x) { cntR[x.role] = (cntR[x.role] || 0) + 1; });
+      var TL = { ringkasan: "Dashboard", tiket: "Ticket", tagihan: "Tagihan", customer: "Customer", jasa: "Jasa setup", hosting: "Hosting", tampilan: "Logo & tampilan", kontak: "Kontak", bayar: "Pembayaran", ekspor: "Ekspor data", tim: "Tim & role" };
+      var leg = ROLES.map(function (r) { var pm = PERM[r], all = r !== "Teknisi"; return '<article class="rl-c ' + RC[r] + '"><div class="rl-t"><span class="rl-i"><i class="bi bi-' + RICO[r] + '"></i></span><div><b>' + r + '</b><small>' + (cntR[r] || 0) + ' anggota · ' + pm.length + ' menu</small></div></div><p>' + RDESC[r] + '</p><div class="rl-a"><span class="rl-k">Akses</span>' + (all ? '<span class="rl-ch all"><i class="bi bi-check2-all"></i>' + (r === "Founder" ? "Semua fitur + atur role" : "Semua fitur") + "</span>" : pm.map(function (k) { return '<span class="rl-ch">' + TL[k] + "</span>"; }).join("")) + "</div></article>"; }).join("");
+      var rows = S.map(function (x, i) {
+        var self = x.email === meE, fixed = x.role === "Founder" || self;
+        return '<article class="st-r"><span class="av">' + e((x.nama || "?").charAt(0).toUpperCase()) + '</span><div class="st-t"><b>' + e(x.nama) + (self ? " <em>kamu</em>" : "") + "</b><small>" + e(x.email) + '</small></div><div class="st-o">' + (fixed || !isF ? rbd(x.role) : '<select class="sel" data-trole="' + i + '" aria-label="Ubah role ' + e(x.nama) + '">' + ["Co-Founder", "Teknisi"].map(function (r) { return "<option" + (r === x.role ? " selected" : "") + ">" + r + "</option>"; }).join("") + "</select>") + "</div>" + (isF && !fixed ? '<button class="btn ghost sm dn" type="button" data-tm="del" data-i="' + i + '"><i class="bi bi-trash3"></i> Hapus</button>' : "") + "</article>";
+      }).join("");
+      return '<div class="rl-h"><div><b>Role dan hak akses</b><small>Tiap role punya menu yang berbeda di dashboard admin.</small></div></div><div class="rl-g">' + leg + '</div><div class="tkhead tm-h"><div class="tm-t"><b>Anggota tim</b><span class="bd b4">' + S.length + '</span></div>' + (isF ? '<button class="btn" type="button" data-tm="new"><i class="bi bi-person-plus"></i> Tambah anggota</button>' : "") + '</div><div class="st-l">' + rows + '</div><p class="muted kr-n">Hanya Founder yang bisa menambah anggota dan mengatur role. Demo: data tersimpan di browser ini dan password tidak diperiksa.</p>';
+    }
+    function trole(t) {
+      if (arole() !== "Founder") { toast("Hanya Founder yang bisa mengatur role"); return draw(); }
+      var S = STAFF(), x = S[Number(t.dataset.trole)]; if (!x || x.role === "Founder" || ROLES.indexOf(t.value) < 1) return;
+      x.role = t.value; sv("nx-staff", S); toast(x.nama + " sekarang " + t.value); draw();
+    }
+    function tmAct(d) {
+      if (arole() !== "Founder") return toast("Hanya Founder yang bisa mengatur role");
+      if (d.tm === "new") return modal('<form class="mbox sm" id="f-tm"><div class="mh"><b>Tambah anggota tim</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><label class="fld"><span>Nama <em class="req">*</em></span><input class="inp" name="nama" maxlength="40" required></label><label class="fld"><span>Email <em class="req">*</em></span><input class="inp" name="email" type="email" required placeholder="nama@email.com"><small class="hint">Anggota masuk lewat halaman akses admin memakai email ini.</small></label><div class="fld"><span>Role</span><div class="seg2 full" id="tm-r"><button type="button" data-v="Teknisi" aria-pressed="true">Teknisi</button><button type="button" data-v="Co-Founder" aria-pressed="false">Co-Founder</button></div></div><p class="err" id="tm-e" hidden></p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button class="btn" type="submit"><i class="bi bi-person-plus"></i> Tambah</button></div></form>', function (m, close) {
+        var R = "Teknisi";
+        $$("#tm-r button", m).forEach(function (b) { b.addEventListener("click", function () { R = b.dataset.v; $$("#tm-r button", m).forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); }); });
+        $("#f-tm", m).addEventListener("submit", function (ev) {
+          ev.preventDefault(); var f = ev.target, nm = f.nama.value.trim(), em = f.email.value.trim().toLowerCase(), er = $("#tm-e", m), S2 = STAFF();
+          if (S2.some(function (x) { return x.email === em; })) { er.textContent = "Email ini sudah terdaftar di tim."; er.hidden = false; return; }
+          S2.push({ id: "s" + Date.now(), nama: nm, email: em, role: R, dibuat: Date.now() }); sv("nx-staff", S2); close(); toast(nm + " ditambahkan sebagai " + R); draw();
+        });
+      });
+      var S = STAFF(), x = S[Number(d.i)]; if (!x || x.role === "Founder") return;
+      if (d.tm === "del") return modal('<div class="mbox sm"><div class="mh"><b>Hapus anggota?</b></div><div class="mb"><p>' + e(x.nama) + " (" + e(x.role) + ") tidak bisa lagi masuk ke dashboard admin.</p></div><div class=\"mf\"><button type=\"button\" class=\"btn ghost\" data-x>Batal</button><button type=\"button\" class=\"btn dng\" data-ok>Hapus</button></div></div>", function (m, close) {
+        $("[data-ok]", m).addEventListener("click", function () { var S3 = STAFF().filter(function (z) { return z.email !== x.email; }); sv("nx-staff", S3); close(); toast(x.nama + " dihapus dari tim"); draw(); });
+      });
+    }
     var PAN = {
       ringkasan: function () {
         var a = adm ? TK() : mine(), n = a.filter(function (x) { return !cl(x); }).length, el = $("#p-ringkasan");
@@ -741,7 +821,7 @@
           var needH = need.slice(0, 5).map(function (x) { return '<button class="li ln" data-gt="' + x.id + '">' + av(uname(x)) + '<span><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(uname(x)) + " · " + e(last(x).d) + "</small></span>" + bd(x.st, 1) + "</button>"; }).join("") || '<div class="dcard empty sm0"><i class="bi bi-check2-circle"></i><b>Semua sudah dibalas</b><p class="muted">Tidak ada ticket yang menunggu balasanmu.</p></div>';
           var billH = unpaid.slice().sort(function (x, y) { return x.jatuh < y.jatuh ? -1 : 1; }).slice(0, 4).map(function (b) { var lt = dleft(b.jatuh) < 0; return '<button class="li ln' + (lt ? " late" : "") + '" data-tab="tagihan"><span class="bh-i ' + (lt ? "x" : "w") + '"><i class="bi bi-' + (lt ? "exclamation-triangle" : "hourglass-split") + '"></i></span><span><b>' + e(b.item) + " · " + rp(b.total) + "</b><small>" + e(b.id) + " · " + e(bcust(b)) + " · " + rel(b) + "</small></span>" + bd(bs(b)) + "</button>"; }).join("") || '<div class="dcard empty sm0"><i class="bi bi-cash-stack"></i><b>Tidak ada tagihan aktif</b><p class="muted">Tagihan yang belum dibayar muncul di sini.</p></div>';
           var legend = SG.map(function (g) { return '<li><i style="background:' + g[1] + '"></i><span>' + (SHORT[g[0]] || g[0]) + "</span><b>" + cn(g[0]) + "</b></li>"; }).join("");
-          var QK = [["receipt", "Buat tagihan", "tagihan"], ["tags", "Jasa setup", "jasa"], ["hdd-stack", "Hosting", "hosting"], ["telephone", "Kontak", "kontak"]].map(function (q) { return '<button type="button" class="qk" data-tab="' + q[2] + '"><i class="bi bi-' + q[0] + '"></i><span>' + q[1] + "</span></button>"; }).join("");
+          var QK = [["receipt", "Buat tagihan", "tagihan"], ["tags", "Jasa setup", "jasa"], ["hdd-stack", "Hosting", "hosting"], ["telephone", "Kontak", "kontak"]].filter(function (q) { return can(q[2]); }).map(function (q) { return '<button type="button" class="qk" data-tab="' + q[2] + '"><i class="bi bi-' + q[0] + '"></i><span>' + q[1] + "</span></button>"; }).join("");
           el.innerHTML = '<div class="hero-c adm-hero"><div><small class="hero-d">' + e(hr) + "</small><b>Selamat " + sl + ", " + e(me()) + "</b><p>" + (need.length ? need.length + " ticket menunggu balasanmu." : "Semua ticket sudah ditanggapi.") + (late.length ? " " + late.length + " tagihan terlambat." : "") + '</p></div><div class="hc-a"><button class="btn" data-tab="tiket"><i class="bi bi-chat-dots"></i> Buka ticket</button><button class="btn ghost" data-tab="tagihan"><i class="bi bi-receipt"></i> Tagihan</button></div></div>' +
             '<div class="dstats sx-g">' + sx("chat-left-dots", "Perlu dibalas", need.length, "t1", "tiket") + sx("chat-dots", "Ticket aktif", act.length, "t2", "tiket") + sx("hourglass-split", "Menunggu pembayaran", cn("Menunggu pembayaran"), "t3", "tiket") + sx("lightning-charge", "Pesanan diproses", cn("Pesanan Diproses"), "t5", "tiket") + sx("cash-stack", "Tagihan aktif", unpaid.length, "t4", "tagihan", rp(tot)) + sx("exclamation-triangle", "Terlambat", late.length, "t6", "tagihan") + "</div>" +
             '<div class="cols2 adm-cols"><div><div class="sec-h"><h2>Perlu dibalas</h2><button type="button" class="lnk" data-tab="tiket">Lihat semua <i class="bi bi-arrow-right"></i></button></div><div class="lis">' + needH + '</div><div class="sec-h"><h2>Tagihan perlu perhatian</h2><button type="button" class="lnk" data-tab="tagihan">Lihat semua <i class="bi bi-arrow-right"></i></button></div><div class="lis">' + billH + "</div></div>" +
@@ -783,7 +863,7 @@
         var P = ld("nx-prof", { discord: "", wa: "" }), mi = mine(), nT = mi.filter(function (x) { return !cl(x); }).length, nO = OR().length, nB = BL().filter(function (b) { return bmine(b) && b.st === "Belum dibayar"; }).length, em = ss("nx-email") || "";
         var tg = function (k, ic, t, sub) { var on = P[k] !== false; return '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-' + ic + '"></i></span><div><b>' + t + "</b><small>" + sub + '</small></div><button type="button" class="swt" role="switch" aria-checked="' + on + '" aria-label="' + t + '" data-pf="' + k + '"></button></div>'; };
         var st = function (ic, l, v) { return '<div class="pf-s"><i class="bi bi-' + ic + '"></i><b>' + v + "</b><small>" + l + "</small></div>"; };
-        $("#p-profile").innerHTML = '<div class="pfx"><section class="pf-hero"><span class="pf-av">' + e(me().charAt(0).toUpperCase()) + '</span><div class="pf-id"><b>' + e(me()) + "</b><small>" + e(em || "Login lewat Discord/Google") + '</small><div class="pf-b"><span class="bd b4"><i class="bi bi-patch-check"></i> Customer</span><span class="bd b2">Akun aktif</span></div></div></section>' +
+        $("#p-profile").innerHTML = '<div class="pfx"><section class="pf-hero"><span class="pf-av">' + e(me().charAt(0).toUpperCase()) + '</span><div class="pf-id"><b>' + e(me()) + "</b>" + (em ? "<small>" + e(em) + "</small>" : "") + '<div class="pf-b"><span class="bd b4"><i class="bi bi-patch-check"></i> Customer</span><span class="bd b2">Akun aktif</span></div></div></section>' +
           '<div class="pf-sts">' + st("chat-dots", "Ticket aktif", nT) + st("receipt", "Total pesanan", nO) + st("wallet2", "Tagihan aktif", nB) + "</div>" +
           '<div class="pf-g"><form class="dcard pf-f" id="f-prof"><h3><i class="bi bi-person-lines-fill"></i> Data akun</h3><label class="fld"><span>Nama</span><input class="inp" name="nama" required maxlength="40" value="' + e(me()) + '"></label><label class="fld"><span>Email</span><input class="inp" disabled value="' + e(em || "-") + '"></label><div class="row2"><label class="fld"><span>Username Discord</span><input class="inp" name="dc" placeholder="contoh: nexora_user" value="' + e(P.discord || "") + '"></label><label class="fld"><span>Nomor WhatsApp</span><input class="inp" name="wa" inputmode="tel" placeholder="08xxxxxxxxxx" value="' + e(P.wa || "") + '"></label></div><small class="hint">Discord dan WhatsApp dipakai tim NEXORA untuk menghubungimu soal order.</small><button class="btn" type="submit"><i class="bi bi-check2"></i> Simpan profile</button></form>' +
           '<div class="pf-col">' + lkCard() + '<section class="dcard"><h3><i class="bi bi-bell"></i> Notifikasi</h3>' + tg("nTk", "chat-dots", "Balasan ticket", "Kabari saat admin membalas ticketmu.") + tg("nBill", "cash-stack", "Tagihan", "Pengingat saat ada tagihan dan jatuh tempo.") + '</section><section class="dcard"><h3><i class="bi bi-life-preserver"></i> Bantuan cepat</h3><div class="pf-ln"><button type="button" class="qk" data-go="buka"><i class="bi bi-plus-circle"></i><span>Buka ticket</span></button><button type="button" class="qk" data-go="tagihan"><i class="bi bi-wallet2"></i><span>Tagihan</span></button><button type="button" class="qk" id="logout2"><i class="bi bi-box-arrow-right"></i><span>Keluar</span></button></div></section></div></div></div>';
@@ -791,13 +871,28 @@
       customer: function () {
         $("#p-customer").innerHTML = '<div class="tkhead"><span class="muted">' + custNames().length + ' customer · data untuk menghubungi jika ada kendala</span><label class="sbox cu-sb"><i class="bi bi-search"></i><input class="inp" data-cq type="search" placeholder="Cari nama, email, Discord, WA…" value="' + e(cq) + '"></label></div><div class="cu-grid">' + custCards() + "</div>";
       },
+      tim: function () { $("#p-tim").innerHTML = timPanel(); },
       jasa: function () { harga("jasa"); },
       hosting: function () { harga("hosting"); },
       tampilan: tampilan,
       ekspor: function () { var C = [["nx-tk", "Ticket", "chat-dots", TK().length + " ticket"], ["nx-or", "Pesanan", "receipt", OR().length + " pesanan"], ["nx-harga", "Harga & paket", "tags", "Jasa dan hosting"]]; $("#p-ekspor").innerHTML = '<div class="exg">' + C.map(function (c) { return '<div class="dcard ex"><span class="si"><i class="bi bi-' + c[2] + '"></i></span><div><b>' + c[1] + "</b><small>" + c[3] + '</small></div><button class="btn ghost sm" data-exp="' + c[0] + '"><i class="bi bi-download"></i> Unduh JSON</button></div>'; }).join("") + "</div>"; }
     };
+    function applyPerms() {
+      if (!adm) return;
+      $$(".side [data-tab]", root).forEach(function (b) { b.hidden = !can(b.dataset.tab); });
+      $$(".side .sl", root).forEach(function (l) { var n = l.nextElementSibling, any = false; while (n && !n.classList.contains("sl")) { if (n.dataset && n.dataset.tab && !n.hidden) any = true; n = n.nextElementSibling; } l.hidden = !any; });
+      $$(".side .sg", root).forEach(function (g) { g.hidden = !$$("[data-tab]", g).some(function (b) { return !b.hidden; }); });
+      var sm = $(".who small", root); if (sm) sm.textContent = arole() || "Admin";
+    }
+    function syncRole() {
+      var u = staffBy(ss("nx-email"));
+      if (!u) { toast("Aksesmu ke dashboard admin dicabut oleh Founder"); ss("nx-role", ""); ss("nx-arole", ""); return setTimeout(function () { go("nexora-admin-access.html"); }, 1000); }
+      if (u.role !== arole()) { ss("nx-arole", u.role); toast("Rolemu sekarang: " + u.role); applyPerms(); draw(); }
+    }
     function draw() {
+      if (adm && !can(tab)) tab = "ringkasan";
       $$(".stab[data-tab]", root).forEach(function (b) { b.setAttribute("aria-selected", b.dataset.tab === tab); });
+      if (adm) { var sg0 = ld("nx-sg", {}); $$(".side .sg", root).forEach(function (g) { var has = !!$('.stab[data-tab="' + tab + '"]', g); if (has && lastSg !== tab && !sg0[g.dataset.g]) { sg0[g.dataset.g] = true; sv("nx-sg", sg0); } g.classList.toggle("open", !!sg0[g.dataset.g]); g.classList.toggle("act", has); $(".sgh", g).setAttribute("aria-expanded", String(!!sg0[g.dataset.g])); }); lastSg = tab; }
       $$(".dpanel", root).forEach(function (p) { p.hidden = p.id !== "p-" + tab; });
       var pn = $("#p-" + tab), sx = (lastTab === tab && pn) ? $$(".chips,.bchips,.tkpills", pn).map(function (el) { return el.scrollLeft; }) : null;
       var isNew = lastTab !== tab;
@@ -818,12 +913,13 @@
     }
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-tab],[data-go],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-af],[data-of],[data-back],[data-close],[data-hs],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,#lg-x,#qr-x,.sw,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],#logout2"); if (!t) return;
+      var t = ev.target.closest("[data-tab],[data-go],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-af],[data-of],[data-back],[data-close],[data-hs],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,#lg-x,#qr-x,.sw,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],[data-tm],#logout2"); if (!t) return;
       var d = t.dataset;
       if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
       if (t.classList.contains("dd-opt")) { var dd = t.closest(".dd"); ddClose(); if (dd.hasAttribute("data-bdd")) return bdd(dd.id, d.v); $("#f-buka").paket.value = d.v; return bukaSync(); }
       if (d.bx) return bAct(d);
       if (d.ed) return edAct(d);
+      if (d.tm) return tmAct(d);
       if (t.id === "logout" || t.id === "logout2") return outAsk();
       if (t.id === "side-t") return setWide();
       if (d.ct) { ctab = d.ct; return draw(); }
@@ -877,6 +973,7 @@
     root.addEventListener("change", function (ev) {
       var t = ev.target;
       if (t.closest("#f-buka")) bukaSync();
+      if (t.matches("[data-trole]")) return trole(t);
       if (t.matches("[data-st]")) { if (!t.value) return; var a = TK(); a.forEach(function (x) { if (x.id === sel && x.st !== t.value) { x.st = t.value; x.m.push({ w: "s", t: "Status diubah: " + t.value, d: "Baru saja", h: hm() }); syncOrd(x); nt(x, "tk", "Status diperbarui", x.id + " · " + t.value); } }); sv("nx-tk", a); toast("Status diperbarui"); draw(); }
       if (t.id === "lg" && t.files[0]) { setLogo(t.files[0]); t.value = ""; }
       if (t.id === "qr" && t.files[0]) { setQR(t.files[0]); t.value = ""; }
@@ -889,7 +986,7 @@
       if (f.matches("[data-rep]")) {
         var txt = $("textarea", f).value.trim(); if (!txt) return; var a = TK(), cur = a.filter(function (x) { return x.id === sel; })[0];
         if (!cur || cl(cur)) { toast("Ticket sudah ditutup, chat tidak bisa dikirim"); return draw(); }
-        cur.m.push(adm ? { w: "a", n: me(), t: txt, d: "Baru saja", h: hm() } : { w: "c", t: txt, d: "Baru saja", h: hm() }); if (adm) nt(cur, "tk", "Balasan baru · " + cur.id, "Admin - " + me() + ": " + (txt.length > 80 ? txt.slice(0, 80) + "…" : txt)); if (adm && cur.st === "Menunggu admin balas") cur.st = "Terhubung dengan admin"; sv("nx-tk", a); draw();
+        cur.m.push(adm ? { w: "a", n: me(), r: arole(), t: txt, d: "Baru saja", h: hm() } : { w: "c", t: txt, d: "Baru saja", h: hm() }); if (adm) nt(cur, "tk", "Balasan baru · " + cur.id, whoR() + ": " + (txt.length > 80 ? txt.slice(0, 80) + "…" : txt)); if (adm && cur.st === "Menunggu admin balas") cur.st = "Terhubung dengan admin"; sv("nx-tk", a); draw();
         if (!adm) { var tid = sel; setTimeout(function () { var b = TK(); b.forEach(function (x) { if (x.id === tid && !cl(x) && last(x).w === "c") x.m.push({ w: "a", t: "Terima kasih, pesanmu sudah kami terima. Tim NEXORA akan segera membalas. (balasan otomatis demo)", d: "Baru saja", h: hm() }); if (x.id === tid && !cl(x) && last(x).w === "a") nt(x, "tk", "Balasan baru · " + x.id, "Admin: Terima kasih, pesanmu sudah kami terima."); }); sv("nx-tk", b); remote(); }, 3500); }
         return;
       }
@@ -902,7 +999,8 @@
         sel = id; tg = "aktif"; tab = "tiket"; draw(); toast("Ticket " + id + " dibuat. Nanti notifikasi otomatis masuk ke Discord NEXORA.");
       }
     });
-    window.addEventListener("storage", function (ev) { if (ev.key === "nx-tk" || ev.key === "nx-or" || ev.key === "nx-bill" || ev.key === "nx-notif") remote(); });
+    $$(".side .sgh", root).forEach(function (h) { h.addEventListener("click", function () { var g = h.parentNode, sg1 = ld("nx-sg", {}); sg1[g.dataset.g] = !g.classList.contains("open"); sv("nx-sg", sg1); g.classList.toggle("open", sg1[g.dataset.g]); h.setAttribute("aria-expanded", String(sg1[g.dataset.g])); }); });
+    window.addEventListener("storage", function (ev) { if (ev.key === "nx-tk" || ev.key === "nx-or" || ev.key === "nx-bill" || ev.key === "nx-notif") remote(); if (adm && ev.key === "nx-staff") syncRole(); });
     draw();
     if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); if (actCount() >= MAXT) { limitModal(); } else { tab = "buka"; draw(); } }
   }
@@ -913,6 +1011,7 @@
     if (m === "login" || m === "alogin") return authInit(m, root);
     var need = m === "admin" ? "admin" : "cust";
     if (ss("nx-role") !== need) return go(m === "admin" ? "nexora-admin-access.html" : "masuk.html");
+    if (m === "admin") { var su = staffBy(ss("nx-email")); if (!su) { ss("nx-role", ""); ss("nx-arole", ""); return go("nexora-admin-access.html"); } ss("nx-arole", su.role); ss("nx-name", su.nama); }
     dashInit(m === "admin", root);
   };
   document.addEventListener("DOMContentLoaded", window.nxDash);
