@@ -127,13 +127,27 @@ function temaSaatIni() {
   return document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 }
 
+function gantiTema(baru) {
+  const d = document.documentElement;
+  function terapkan() {
+    d.dataset.theme = baru;
+    try { localStorage.setItem("nexora-theme", baru); } catch (e) {}
+    const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = baru === "dark" ? "#14111f" : "#7c5cff";
+  }
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return terapkan();
+  if (document.startViewTransition) {
+    d.classList.add("theme-vt");
+    const bersih = function () { d.classList.remove("theme-vt"); };
+    try { document.startViewTransition(terapkan).finished.then(bersih, bersih); } catch (e) { terapkan(); bersih(); }
+  } else {
+    d.classList.add("theme-fade"); terapkan();
+    setTimeout(function () { d.classList.remove("theme-fade"); }, 450);
+  }
+}
+
 function pasangTema() {
   document.querySelectorAll(".theme-toggle").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      const baru = temaSaatIni() === "dark" ? "light" : "dark";
-      document.documentElement.dataset.theme = baru;
-      try { localStorage.setItem("nexora-theme", baru); } catch (e) {}
-    });
+    btn.addEventListener("click", function () { gantiTema(temaSaatIni() === "dark" ? "light" : "dark"); });
   });
 }
 
@@ -231,24 +245,26 @@ function pasangSpot() {
 const ALUR = {
   tahu: [
     { j: "Masuk atau buat akun", d: "Klik Masuk di pojok kanan atas. Belum punya akun? Daftar gratis, cukup nama dan email.",
-      v: "opsi", x: { cap: "Akun NEXORA", sel: 0, o: [["Masuk", "Sudah punya akun"], ["Buat akun", "Daftar gratis dalam semenit"]] } },
-    { j: "Buka ticket di dashboard", d: "Di dashboard customer, klik Buka ticket lalu pilih kategori: order baru atau bantuan admin.",
-      v: "opsi", x: { cap: "Buka ticket", sel: 0, o: [["Order baru", "Pesan jasa setup atau hosting"], ["Bantuan admin", "Laporkan kendala atau tanya dulu"]] } },
-    { j: "Pilih paket dan ceritakan kebutuhanmu", d: "Pilih paket dari daftar harga, lalu tulis kebutuhanmu: versi, jumlah pemain, plugin atau fitur yang diinginkan.",
-      v: "opsi", x: { cap: "Pilih paket yang mau dipesan", sel: 1, o: [["Plugin Minecraft", ""], ["Server Survival Biasa", ""], ["Server SMP", ""]] } },
-    { j: "Admin membalas ticket kamu", d: "Admin membaca pesananmu dan membalas langsung di ticket. Kalau masih bingung, tanya aja di sini.",
-      v: "chat", x: { cap: "Ticket \u00b7 Terhubung dengan admin", m: [
-        ["us", "Hallo kak, pesananmu sudah kami terima. Kami cek detailnya dulu yaa."],
-        ["me", "Oke min, terima kasih."]
+      v: "login" },
+    { j: "Buka ticket di dashboard", d: "Di dashboard customer, klik Buka ticket lalu pilih jenis ticket: Order baru, Bantuan, atau Lainnya.",
+      v: "form", x: { f: 1 } },
+    { j: "Pilih layanan dan paket", d: "Pilih layanan (Setup Minecraft, Setup Discord, atau Hosting), lalu pilih paket dari daftar harga.",
+      v: "form", x: { f: 2 } },
+    { j: "Ceritakan kebutuhanmu", d: "Tulis subjek dan pesan: versi, jumlah pemain, plugin atau fitur yang diinginkan. Lalu klik Kirim ticket.",
+      v: "form", x: { f: 3 } },
+    { j: "Admin membalas ticket kamu", d: "Admin membalas langsung di ticket dan status berubah jadi Terhubung dengan admin. Kalau masih bingung, tanya aja di sini.",
+      v: "chat", x: { cap: "T-1044 \u00b7 Terhubung dengan admin", m: [
+        ["me", "Aku mau pasang plugin untuk server survival, sekitar 20 pemain."],
+        ["us", "Hallo kak, pesananmu sudah kami terima. Kami cek detailnya dulu yaa."]
       ] } },
     { j: "Terima tagihan dan bayar", d: "Admin mengirim tagihan dengan harga akhir. Transfer sesuai petunjuk, lalu kirim bukti bayarnya di ticket.",
-      v: "chat", x: { cap: "Ticket \u00b7 Menunggu pembayaran", m: [
-        ["us", "Untuk Plugin Minecraft yang kaka pesan harganya Rp 10.000 yaa. Tagihannya sudah kami kirim."],
+      v: "chat", x: { cap: "T-1044 \u00b7 Menunggu pembayaran", m: [
+        ["us", "Tagihan Plugin Minecraft Rp 10.000 sudah kami kirim yaa. Silakan transfer lalu kirim buktinya di sini."],
         ["me", "Sudah aku transfer, ini bukti transfernya."],
         ["us", "Terima kasih, pembayaran sudah kami konfirmasi."]
       ] } },
     { j: "Pesanan diproses", d: "Setelah pembayaran dikonfirmasi, admin mengerjakan pesananmu. Perkembangannya bisa kamu pantau dari ticket.",
-      v: "progres" },
+      v: "progres", x: { cap: "T-1044 \u00b7 Pesanan diproses" } },
     { j: "Pesanan selesai", d: "Pesananmu selesai dan diserahkan lewat ticket. Kalau ada yang kurang, kamu masih bisa chat admin.",
       v: "selesai", x: { ok: "Orderan selesai", t: ["Pesanan selesai disiapkan", "Pesanan dikirim lewat ticket", "Kamu menerima pesananmu"] } },
     { j: "Ticket ditutup", d: "Kalau semua sudah beres, admin menutup ticket. Riwayatnya tetap bisa kamu lihat di dashboard.",
@@ -263,6 +279,33 @@ function panelAlur(s) {
     return daftar.map(function (u, i) {
       return '<div class="fb-task ' + (i < selesai ? "done" : "now") + '"' + k(i + 2) + "><i></i>" + u + "</div>";
     }).join("");
+  }
+  if (s.v === "login") {
+    return '<div class="fb-cap"' + k(0) + ">Akun NEXORA</div>" +
+      '<div class="fm-tabs"' + k(1) + '><span class="on">Masuk</span><span>Daftar</span></div>' +
+      '<div class="fm-fld"' + k(2) + "><small>Email</small><div>kamu@email.com</div></div>" +
+      '<div class="fm-fld"' + k(3) + "><small>Password</small><div>\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022</div></div>" +
+      '<div class="fb-cta"' + k(4) + ">Masuk</div>";
+  }
+  if (s.v === "form") {
+    const f = s.x.f;
+    const dots = [1, 2, 3].map(function (n) { return '<i class="' + (n === f ? "on" : n < f ? "done" : "") + '">' + n + "</i>"; }).join("<u></u>");
+    const judul = ["Pilih jenis", "Pilih layanan dan paket", "Ceritakan kebutuhanmu"][f - 1];
+    let isi = "";
+    if (f === 1) {
+      isi = [["Order baru", "Pesan setup atau hosting"], ["Bantuan", "Tanya atau lapor kendala"], ["Lainnya", "Keperluan lain"]].map(function (o, i) {
+        return '<div class="fb-opt' + (i === 0 ? " sel" : "") + '"' + k(i + 2) + "><i></i><div><b>" + o[0] + "</b><small>" + o[1] + "</small></div></div>";
+      }).join("");
+    } else if (f === 2) {
+      isi = '<div class="fm-seg"' + k(2) + ">" + ["Setup Minecraft", "Setup Discord", "Hosting"].map(function (n, i) { return "<span" + (i === 0 ? ' class="on"' : "") + ">" + n + "</span>"; }).join("") + "</div>" +
+        '<div class="fm-fld"' + k(3) + "><small>Paket</small><div class=\"fm-dd\"><span><b>Plugin Minecraft</b><em>Rp 10.000</em></span><i>\u25BE</i></div></div>";
+    } else {
+      isi = '<div class="fm-fld"' + k(2) + "><small>Subjek</small><div>Order Plugin Minecraft</div></div>" +
+        '<div class="fm-fld"' + k(3) + "><small>Pesan</small><div class=\"fm-ta\">Aku mau pasang plugin untuk server survival, sekitar 20 pemain. Versi Java 1.21.</div></div>" +
+        '<div class="fb-cta"' + k(4) + ">Kirim ticket</div>";
+    }
+    return '<div class="fm-head"' + k(0) + '><b>Buka ticket</b><span class="fm-st">' + dots + "</span></div>" +
+      '<div class="fb-cap"' + k(1) + "><b>" + f + ". " + judul + "</b></div>" + isi;
   }
   if (s.v === "opsi") {
     return '<div class="fb-cap"' + k(0) + ">" + s.x.cap + "</div>" + s.x.o.map(function (o, i) {
@@ -285,7 +328,7 @@ function panelAlur(s) {
     return (s.x.cap ? '<div class="fb-cap"' + k(0) + ">" + s.x.cap + "</div>" : "") + s.x.m.map(function (m, i) { return '<div class="fb-msg ' + m[0] + '"' + k(i + 1) + ">" + m[1] + "</div>"; }).join("");
   }
   if (s.v === "progres") {
-    return '<div class="fb-cap"' + k(0) + ">" + "Progres setup" + "<b>75%</b></div>" +
+    return '<div class="fb-cap"' + k(0) + ">" + (s.x && s.x.cap ? s.x.cap : "Progres setup") + "<b>75%</b></div>" +
       '<div class="fb-bar"' + k(1) + "><span></span></div>" +
       tugas([
         "Server dibuat",
